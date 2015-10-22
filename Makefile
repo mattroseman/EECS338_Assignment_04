@@ -1,19 +1,15 @@
 CC = gcc
 C_FLAGS = -Wall -Wextra
 
-all: savings_account_problem
+program_NAME = sap
+program_C_SRCS = $(wildcard *.c)
+program_C_OBJS = ${program_C_SRCS:.c=.o}
 
-savings_account_problem: sap.o
-	$(CC) savings_account_problem.o -o sap
+all: $(program_NAME)
 
-sap.o: savings_account_problem.c
-	$(CC) -c $(C_FLAGS) savings_account_problem.c
+$(program_NAME): $(program_C_OBJS)
+	$(CC)  $(program_C_OBJS) $(C_FLAGS) -o $(program_NAME)
 
-withdraw: withdraw.o
-	$(CC) withdraw.o -o withdraw
-
-withdraw.o: withdraw.c
-	$(CC) -c $(C_FLAGS) withdraw.c
-
-clean:
-	rm -f sap savings_account_problem.o
+clean: 
+	@- rm $(program_NAME)
+	@- rm $(program_C_OBJS)
