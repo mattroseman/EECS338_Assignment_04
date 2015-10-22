@@ -66,7 +66,7 @@ int main() {
     printf("The fourth semaphore has value %d\n", val);
 
 
-    // Signals the second semaphore (its value should change from 1 to 0)
+    // Signals the second semaphore (its value should change from 0 to 1)
     Signal(semid, 1);
     printf("The second semaphore has been signaled and has value %d\n", GetVal(semid, 1));
 
