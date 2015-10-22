@@ -11,7 +11,7 @@
 // Makes a semaphore group from key key of n semaphores and returns the new id
 // Sets all semaphores to 0
 // the size of the array and n should be the same
-static int InitializeSemaphores(key_t key, int n, unsigned short * initVal)
+static int CreateGroup(key_t key, int n, unsigned short * initVal)
 {
     int returnVal;
     if((returnVal = semget(key, n, IPC_CREAT | 0666)) < 0)
@@ -29,6 +29,16 @@ static int InitializeSemaphores(key_t key, int n, unsigned short * initVal)
     }
 
     return returnVal;
+}
+
+// Destroys the group with id semid
+static void DestroyGroup(int semid)
+{
+    if(semctl(semid, 0, IPC_RMID) < 0)
+    {
+        perror("semctl IPC_RMID failed");
+        exit(EXIT_FAILURE);
+    }
 }
 
 static void Signal(int semid, int semnum)

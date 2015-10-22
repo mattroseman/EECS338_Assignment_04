@@ -33,7 +33,7 @@ int main() {
 
     // IPC_CREAT signals to make new group if key doesn't already exist
     // CatchError((semid = semget(SEMAPHORE_KEY, 4, IPC_CREAT | ALL_READ_WRITE)), "semget failed\n");
-    semid = InitializeSemaphores(SEMAPHORE_KEY, 4, counters);
+    semid = CreateGroup(SEMAPHORE_KEY, 4, counters);
     printf("Semaphore group with id: %d was just created\n", semid);
 
 
@@ -56,7 +56,7 @@ int main() {
     printf("The second semaphore has been signaled and has value %d\n", GetVal(semid, 1));
 
 
-    CatchError(semctl(semid, 0, IPC_RMID), "semctl IPC_RMID failed\n");
+    DestroyGroup(semid);
     printf("The semaphore group %d has been removed\n", semid);
 
     exit(EXIT_SUCCESS);

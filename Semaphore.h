@@ -8,7 +8,9 @@ union semun {
     unsigned short *array;
 };
 
-static int InitializeSemaphores(key_t, int, unsigned short *);
+static int CreateGroup(key_t, int, unsigned short *);
+
+static void DestroyGroup(int);
 
 // Signal takes in the semaphore group id and the semaphore number in that group
 static void Signal(int, int);
