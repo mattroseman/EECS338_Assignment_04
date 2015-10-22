@@ -5,10 +5,9 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
-// creating a new semaphore group
-// int semget(IPC_PRIVATE, int numsems, IPC_CREAT | 0666)
 
 #define SEMAPHORE_KEY 0xFA2B
+#define ALL_READ_WRITE 0666
 
 /* binary semaphore mutex = 1 
  * nonbinary semaphore wlist = 0
@@ -31,8 +30,16 @@ unsigned short counters[] = {1,2,3,4};
 int main() {
     pid_t pid = getpid();
     printf("Process ID: %d\n", pid);
+
+    // IPC_RMID signals to remove the specified group
+    if (semctl(SEMAPHORE_KEY, 0, IPC_RMID) < 0)
+    {
+        perror("semctl IPC_RMID failed");
+        exit(EXIT_FAILURE);
+    }
     
-    if ((semid = semget(SEMAPHORE_KEY, 4, IPC_CREAT | 0666)) == -1)
+    // IPC_CREAT signals to make new group if key doesn't already exist
+    if ((semid = semget(SEMAPHORE_KEY, 4, IPC_CREAT | ALL_READ_WRITE)) < 0)
     {
         perror("semget failed");
         exit(EXIT_FAILURE);
@@ -41,7 +48,8 @@ int main() {
 
     SemUnion.array = counters;
     
-    if (semctl(SEMAPHORE_KEY, 0, SETALL, SemUnion) == -1)
+    // sets all semaphores in the group to the coresponding values in SemUnion.array, or in counters
+    if (semctl(SEMAPHORE_KEY, 0, SETALL, SemUnion) < 0)
     {
         perror("semctl failed");
         exit(EXIT_FAILURE);
@@ -49,5 +57,11 @@ int main() {
     printf("Each semaphore in: %d has been initialized to a certain value", semid); 
 
 
-    return 0;
+    if (semctl(SEMAPHORE_KEY, 0, IPC_RMID) < 0)
+    {
+        perror("semctl IPC_RMID failed");
+        exit(EXIT_FAILURE);
+    }
+
+    exit(EXIT_SUCCESS);
 }
