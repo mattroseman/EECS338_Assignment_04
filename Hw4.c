@@ -9,7 +9,6 @@
 #include "Semaphore.c"
 
 #define SEMAPHORE_KEY 64043
-#define ALL_READ_WRITE 0666
 
 /* binary semaphore mutex = 1 
  * nonbinary semaphore wlist = 0
@@ -20,18 +19,9 @@
 
 void CatchError(int, char *);
 
-// Possible return values from the semctl call
-union semun {
-    int val;
-    struct semid_ds *buf;
-    unsigned short *array;
-};
-
 // The identifier for the semaphore group that will be made
 int semid;
 
-
-union semun SemUnion;
 // initial starting values of the semaphores
 unsigned short counters[] = {0,0,0,0};
 
@@ -39,19 +29,14 @@ int main() {
     pid_t pid = getpid();
     printf("Process ID: %d\n", pid);
 
-    SemUnion.array = counters;
-
     int val;
 
     // IPC_CREAT signals to make new group if key doesn't already exist
-    CatchError((semid = semget(SEMAPHORE_KEY, 4, IPC_CREAT | ALL_READ_WRITE)), "semget failed\n");
+    // CatchError((semid = semget(SEMAPHORE_KEY, 4, IPC_CREAT | ALL_READ_WRITE)), "semget failed\n");
+    semid = InitializeSemaphores(SEMAPHORE_KEY, 4, counters);
     printf("Semaphore group with id: %d was just created\n", semid);
 
 
-    // sets all semaphores in the group to the coresponding values in SemUnion.array, or in counters
-    CatchError(semctl(semid, 0, SETALL, SemUnion), "semctl SETALL failed\n");
-    printf("Each semaphore in: %d has been initialized to a certain value\n", semid); 
-    
     // gets the value of the 0th semaphore in the semid group
     val = GetVal(semid, 0);
     printf("The first semaphore has value %d\n", val);

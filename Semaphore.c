@@ -8,6 +8,28 @@
 
 #include "Semaphore.h"
 
+// Makes a semaphore group from key key of n semaphores and returns the new id
+// Sets all semaphores to 0
+// the size of the array and n should be the same
+static int InitializeSemaphores(key_t key, int n, unsigned short * initVal)
+{
+    int returnVal;
+    if((returnVal = semget(key, n, IPC_CREAT | 0666)) < 0)
+    {
+        perror("Semget with IPC_CREAT failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    union semun SemUnion;
+    SemUnion.array = initVal;
+    if (semctl(returnVal, 0, SETALL, SemUnion) < 0)
+    {
+        perror("Semctl with SETALL failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    return returnVal;
+}
 
 static void Signal(int semid, int semnum)
 {
@@ -36,11 +58,11 @@ static void Wait(int semid, int semnum)
 
 static int GetVal(int semid, int semnum)
 {
-    int val;
-    if((val = semctl(semid, semnum, GETVAL)) < 0)
+    int returnVal;
+    if((returnVal = semctl(semid, semnum, GETVAL)) < 0)
     {
         perror("semctl GETVAL for semaphore failed\n");
         exit(EXIT_FAILURE);
     }
-    return val;
+    return returnVal;
 }
