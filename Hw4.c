@@ -25,6 +25,9 @@ int semid;
 // The identifier for the shared memory segment that will be made
 int shmid;
 
+// The address in memory of the shared memory 
+void * memaddr;
+
 // initial starting values of the semaphores
 unsigned short counters[] = {0,0,0,0};
 
@@ -69,20 +72,28 @@ int main()
     shmid = CreateSegment(sizeof(message));
     printf("The shared memory segment with id %d has been created\n", shmid);
 
+    memaddr = AttachSegment(shmid);
+    printf("The shared memory address at %p has been associated with process %d\n", memaddr, getpid());
+
     pargs[0] = "withdraw";
     pargs[1] = NULL;
 
     //Create a child process and send it a string
     CatchError((pid = fork()), "fork failed\n");
 
-    message = "The passed message worked great\n";
-
     if (pid == 0)
     {
         printf("Created new process with pid: %d\n", getpid());
+        // the child process is now running the withdraw program 
         CatchError(execvp("./withdraw", pargs), "execvp failed\n");
     }
 
+    message = "The passed message worked great\n";
+
+
+Cleanup:
+    DetachSegment(memaddr);
+    printf("The shared memory address at %p assiociated with process %d has been detached\n", memaddr, getpid());
 
     DestroySegment(shmid);
     printf("The shared memory segment with id %d has been removed\n", shmid);
