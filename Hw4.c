@@ -7,6 +7,7 @@
 #include <sys/types.h>
 
 #include "Semaphore.c"
+#include "SharedMemory.c"
 
 #define SEMAPHORE_KEY 64043
 
@@ -21,11 +22,19 @@ void CatchError(int, char *);
 
 // The identifier for the semaphore group that will be made
 int semid;
+// The identifier for the shared memory segment that will be made
+int shmid;
 
 // initial starting values of the semaphores
 unsigned short counters[] = {0,0,0,0};
 
-int main() {
+// a message to be passed between processes
+char * message;
+
+char * pargs[2];
+
+int main() 
+{
     pid_t pid = getpid();
     printf("Process ID: %d\n", pid);
 
@@ -56,8 +65,30 @@ int main() {
     printf("The second semaphore has been signaled and has value %d\n", GetVal(semid, 1));
 
 
+    // creates a new shared memory segment the size of the message
+    shmid = CreateSegment(sizeof(message));
+    printf("The shared memory segment with id %d has been created\n", shmid);
+
+    pargs[0] = "withdraw";
+    pargs[1] = NULL;
+
+    //Create a child process and send it a string
+    CatchError((pid = fork()), "fork failed\n");
+
+    message = "The passed message worked great\n";
+
+    if (pid == 0)
+    {
+        printf("Created new process with pid: %d\n", getpid());
+        CatchError(execvp("./withdraw", pargs), "execvp failed\n");
+    }
+
+
+    DestroySegment(shmid);
+    printf("The shared memory segment with id %d has been removed\n", shmid);
+
     DestroyGroup(semid);
-    printf("The semaphore group %d has been removed\n", semid);
+    printf("The semaphore group with id %d has been removed\n", semid);
 
     exit(EXIT_SUCCESS);
 }

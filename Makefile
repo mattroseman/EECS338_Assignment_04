@@ -2,14 +2,30 @@ CC = gcc
 C_FLAGS = -Wall -Wextra
 
 program_NAME = sap
-program_C_SRCS = $(wildcard *.c)
-program_C_OBJS = ${program_C_SRCS:.c=.o}
+withdraw_NAME = withdraw
+#receiver_NAME = receiver
 
-all: $(program_NAME)
+helper_C_SRCS = Semaphore.c SharedMemory.c
+main_program_C_SRCS = Hw4.c
+withdraw_C_SRCS = Withdraw.c
+#receiver_C_SRCS = Receiver.c
 
-$(program_NAME): $(program_C_OBJS)
-	$(CC)  $(program_C_OBJS) $(C_FLAGS) -o $(program_NAME)
+helper_C_OBJS = ${helper_C_SRCS:.c=.o}
+main_program_C_OBJS = ${main_program_C_SRCS:.c=.o}
+withdraw_C_OBJS = ${withdraw_C_SRCS:.c=.o}
+#receiver_C_OBJS = ${receiver_C_SRCS:.c=.o}
+
+all: $(program_NAME) $(withdraw_NAME)
+
+$(program_NAME): $(main_program_C_OBJS) $(helper_C_OBJS)
+	$(CC) $(helper_C_OBJS) $(main_program_C_OBJS) $(C_FLAGS) -o $(program_NAME)
+
+$(withdraw_NAME): $(withdraw_C_OBJS) $(helper_C_OBJS)
+	$(CC) $(helper_C_OBJS) $(withdraw_C_OBJS) $(C_FLAGS) -o $(withdraw_NAME)
+
+#$(receiver_NAME): $(receiver_C_OBJS) $(helper_C_OBJS)
+#	$(CC) $(helper_C_OBJS) $(receiver_C_OBJS) $(C_FLAGS) -o $(receiver_NAME)
 
 clean: 
-	@- rm $(program_NAME)
-	@- rm $(program_C_OBJS)
+	@- rm $(program_NAME) $(withdraw_NAME)
+	@- rm $(helper_C_OBJS) $(main_program_C_OBJS) $(withdraw_C_OBJS)

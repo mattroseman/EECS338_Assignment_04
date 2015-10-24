@@ -6,11 +6,11 @@
 
 #include "SharedMemory.h"
 
-// Creates a new shared memory segment based off of key, and returns the segment id
-static int CreateSegment(key_t key)
+// Creates a new shared memory segment based off of key and number of bytes size, and returns the segment id
+static int CreateSegment(size_t size)
 {
     int shmid;
-    if (shmid = shmget(key, 0, IPC_CREAT | 0666) < 0)
+    if ((shmid = shmget(IPC_PRIVATE, size, IPC_CREAT | 0666)) < 0)
     {
         perror("shmget IPC_CREAT failed\n");
         exit(EXIT_FAILURE);
@@ -21,7 +21,7 @@ static int CreateSegment(key_t key)
 // Destroys the shared memory segment with the given id
 static void DestroySegment(int shmid)
 {
-    if (shmctl(shmid, IPC_RMID, 0) < 0)
+    if (shmctl(shmid, IPC_RMID, (struct shmid_ds *) 0) < 0)
     {
         perror("shmctl IPC_RMID failed\n");
         exit(EXIT_FAILURE);
