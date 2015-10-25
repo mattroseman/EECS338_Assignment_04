@@ -34,7 +34,7 @@ unsigned short counters[] = {0,0,0,0};
 // a message to be passed between processes
 char * message;
 
-char * pargs[2];
+char * pargs[3];
 
 int main() 
 {
@@ -75,8 +75,16 @@ int main()
     memaddr = AttachSegment(shmid);
     printf("The shared memory address at %p has been associated with process %d\n", memaddr, getpid());
 
+    // Assign the arguments for the withdraw program
     pargs[0] = "withdraw";
-    pargs[1] = NULL;
+    printf("%d\n", semid);
+    printf("%s\n", pargs[1]);
+    if (sprintf(pargs[1], "%d", semid) < 0)
+    {
+        perror("sprintf failed\n");
+        exit(EXIT_FAILURE);
+    }
+    pargs[2] = NULL;
 
     //Create a child process and send it a string
     CatchError((pid = fork()), "fork failed\n");
@@ -87,6 +95,7 @@ int main()
         // the child process is now running the withdraw program 
         CatchError(execvp("./withdraw", pargs), "execvp failed\n");
     }
+    Wait(semid, 0);
 
     message = "The passed message worked great\n";
 
