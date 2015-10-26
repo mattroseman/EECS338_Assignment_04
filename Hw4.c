@@ -9,12 +9,14 @@
 
 #include "Semaphore.c"
 #include "SharedMemory.c"
+#include "LinkedList.h"
 
 #define SEMAPHORE_KEY 64043
-// the maximum size of the string of the semid in bytes
-#define MAX_ID_SIZE 100
 // The number of semaphores used
 #define NUM_SEM 2
+// The size of shared memory
+// size of two insigned integers and a pointer to a linked list
+#define SHM_SIZE (2*sizeof(unsigned int) + sizeof(LinkedList *))
 // Binary Semaphore
 #define MUTEX 0
 // Nonbinary Semaphores
@@ -49,14 +51,15 @@ char * pargs[2];
 // Assignment variables
 unsigned int wcount;
 unsigned int balance;
+LinkedList list;
 
 int main() 
 {
     // IPC_CREAT signals to make new group if key doesn't already exist
     semid = CreateGroup(SEMAPHORE_KEY, NUM_SEM, initValues);
 
-    // creates a new shared memory segment the size of the of one unsigned int
-    shmid = CreateSegment(SEMAPHORE_KEY, sizeof(unsigned int));
+    // creates a new shared memory segment
+    shmid = CreateSegment(SEMAPHORE_KEY, SHM_SIZE);
 
     // Attach the memory segment to this process and get the address
     memaddr = AttachSegment(shmid);
@@ -69,6 +72,7 @@ int main()
     }
 
 Cleanup:
+
     DetachSegment(memaddr);
 
     DestroySegment(shmid);
