@@ -20,8 +20,11 @@ char * memaddr;
 
 char * message;
 
-void main ()
+// takes one argument, the amount to be withdrawn
+void main (int argc, char * argv[])
 {
+    //TODO
+    //take in the argument of the amount to withdraw
     printf("The Withdraw Program with process id %d has started\n", getpid());
 
     semid = GetGroup(SEMAPHORE_KEY);
