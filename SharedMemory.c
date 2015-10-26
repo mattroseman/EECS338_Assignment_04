@@ -7,7 +7,7 @@
 #include "SharedMemory.h"
 
 // Creates a new shared memory segment based off of key and number of bytes size, and returns the segment id
-static int CreateSegment(key_t key, size_t size)
+int CreateSegment(key_t key, size_t size)
 {
     int shmid;
     if ((shmid = shmget(key, size, IPC_CREAT | 0666)) < 0)
@@ -19,7 +19,7 @@ static int CreateSegment(key_t key, size_t size)
 }
 
 // Returns the id of an already created Shared Memory Segment
-static int GetSegment(key_t key)
+int GetSegment(key_t key)
 {
     int shmid;
     if ((shmid = shmget(key, 0, 0)) < 0)
@@ -31,7 +31,7 @@ static int GetSegment(key_t key)
 }
 
 // Destroys the shared memory segment with the given id
-static void DestroySegment(int shmid)
+void DestroySegment(int shmid)
 {
     if (shmctl(shmid, IPC_RMID, (struct shmid_ds *) 0) < 0)
     {
@@ -40,7 +40,7 @@ static void DestroySegment(int shmid)
     }
 }
 
-static void * AttachSegment(int shmid)
+void * AttachSegment(int shmid)
 {
     void * shmaddr;
     if ((shmaddr = shmat(shmid, 0, 0)) < 0)
@@ -51,7 +51,7 @@ static void * AttachSegment(int shmid)
     return shmaddr;
 }
 
-static void DetachSegment(void * shmaddr)
+void DetachSegment(void * shmaddr)
 {
     if (shmdt(shmaddr) < 0)
     {
@@ -60,7 +60,7 @@ static void DetachSegment(void * shmaddr)
     }
 }
 
-static size_t GetSegmentSize(int shmid)
+size_t GetSegmentSize(int shmid)
 {
     struct shmid_ds buf;
     if (shmctl(shmid, IPC_STAT, &buf) < 0)

@@ -8,10 +8,19 @@
 
 #include "Semaphore.h"
 
+
+// Possible return values from the semctl call
+union semun {
+    int val;
+    struct semid_ds *buf;
+    unsigned short *array;
+};
+
+
 // Makes a semaphore group from key key of n semaphores and returns the new id
 // Sets all semaphores to 0
 // the size of the array and n should be the same
-static int CreateGroup(key_t key, int n, unsigned short * initVal)
+int CreateGroup(key_t key, int n, unsigned short * initVal)
 {
     int returnVal;
     if ((returnVal = semget(key, n, IPC_CREAT | 0666)) < 0)
@@ -32,7 +41,7 @@ static int CreateGroup(key_t key, int n, unsigned short * initVal)
 }
 
 // Gets the id of an already created group
-static int GetGroup(key_t key)
+int GetGroup(key_t key)
 {
     int returnVal;
     if ((returnVal = semget(key, 0, 0)) < 0)
@@ -43,7 +52,7 @@ static int GetGroup(key_t key)
 }
 
 // Destroys the group with id semid
-static void DestroyGroup(int semid)
+void DestroyGroup(int semid)
 {
     if(semctl(semid, 0, IPC_RMID) < 0)
     {
@@ -52,7 +61,7 @@ static void DestroyGroup(int semid)
     }
 }
 
-static void Signal(int semid, int semnum)
+void Signal(int semid, int semnum)
 {
     // initialize the semaphore operation structures
     struct sembuf signal = {semnum, 1, 0};
@@ -64,7 +73,7 @@ static void Signal(int semid, int semnum)
     }
 }
 
-static void Wait(int semid, int semnum)
+void Wait(int semid, int semnum)
 {
     // initialize the semaphore operation structures
     struct sembuf wait = {semnum, -1, 0};
@@ -77,7 +86,7 @@ static void Wait(int semid, int semnum)
     }
 }
 
-static int GetVal(int semid, int semnum)
+int GetVal(int semid, int semnum)
 {
     int returnVal;
     if((returnVal = semctl(semid, semnum, GETVAL)) < 0)

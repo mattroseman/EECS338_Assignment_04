@@ -1,16 +1,16 @@
-#ifndef _SharedMemory_h
-#define _SharedMemory_h
+#ifndef SharedMemory_h
+#define SharedMemory_h
 
-static int CreateSegment(key_t, size_t);
+int CreateSegment(key_t, size_t);
 
-static int GetSegment(key_t);
+int GetSegment(key_t);
 
-static void DestroySegment(int);
+void DestroySegment(int);
 
-static void * AttachSegment(int);
+void * AttachSegment(int);
 
-static void DetachSegment(void *);
+void DetachSegment(void *);
 
-static size_t GetSegmentSize(int);
+size_t GetSegmentSize(int);
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef _LinkedList_h
-#define _LinkedList_h
+#ifndef LinkedList_h
+#define LinkedList_h
 
 typedef struct Node
 {
@@ -14,12 +14,12 @@ typedef struct LinkedList
     Node *tail;
 }LinkedList;
 
-static LinkedList NewLinkedList();
+LinkedList NewLinkedList();
 
-static void AddEndOfList(LinkedList *, unsigned int);
+void AddEndOfList(LinkedList *, unsigned int);
 
-static void DeleteFirstRequest(LinkedList *);
+void DeleteFirstRequest(LinkedList *);
 
-static int FirstRequestAmount(LinkedList *);
+int FirstRequestAmount(LinkedList *);
 
 #endif

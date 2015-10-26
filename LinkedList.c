@@ -1,7 +1,7 @@
 #include "LinkedList.h"
 
 /* Initialize a new empty linked list */
-static LinkedList NewLinkedList()
+LinkedList NewLinkedList()
 {
     LinkedList list;
     // gets the pointer to the lists head, derefrence and get pointer to nextNode
@@ -10,7 +10,7 @@ static LinkedList NewLinkedList()
 }
 
 /* Add the element val to the end of the linked list A */
-static void AddEndOfList(LinkedList *A, unsigned int val)
+void AddEndOfList(LinkedList *A, unsigned int val)
 {
     // list is the dereferenced list
     LinkedList list = *A;
@@ -28,7 +28,7 @@ static void AddEndOfList(LinkedList *A, unsigned int val)
 }
 
 /* Remove the first element from linked list A */
-static void DeleteFirstRequest(LinkedList *A)
+void DeleteFirstRequest(LinkedList *A)
 {
     LinkedList list = *A;
     // if the head doesn't point to the tail the list isn't empty
@@ -46,7 +46,7 @@ static void DeleteFirstRequest(LinkedList *A)
 
 /* Get the value of the first node in linked list A */
 /* Returns -1 if the list is empty */
-static int FirstRequestAmount(LinkedList *A)
+int FirstRequestAmount(LinkedList *A)
 {
     LinkedList list = *A;
     // if the head doesn't point to the tail the list isn't empty

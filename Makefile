@@ -8,7 +8,7 @@ deposit_NAME = deposit
 helper_C_SRCS = Semaphore.c SharedMemory.c LinkedList.c
 main_program_C_SRCS = Hw4.c
 withdraw_C_SRCS = Withdraw.c
-deposit_C_SRCS = deposit.c
+deposit_C_SRCS = Deposit.c
 
 helper_C_OBJS = ${helper_C_SRCS:.c=.o}
 main_program_C_OBJS = ${main_program_C_SRCS:.c=.o}

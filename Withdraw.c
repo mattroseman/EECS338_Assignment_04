@@ -29,14 +29,48 @@ int semid;
 int shmid;
 char * memaddr;
 
+unsigned int withdraw;
+
+unsigned int wcount;
+unsigned int balance;
+LinkedList list;
+
 // takes one argument, the amount to be withdrawn
 void main (int argc, char * argv[])
 {
+    if (sscanf(argv[1], "%u", &withdraw) < 0)
+    {
+        perror("sscanf failed\n");
+        exit(EXIT_FAILURE);
+    }
+
     semid = GetGroup(SEMAPHORE_KEY);
 
     shmid = GetSegment(SEMAPHORE_KEY);
 
     memaddr = (char *)AttachSegment(shmid);
+
+    wcount = *(unsigned int *)memaddr;
+    balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
+    list = *(LinkedList *)(memaddr + 2*sizeof(unsigned int));
+
+    Wait(semid, MUTEX);
+    if (wcount == 0 && balance > withdraw)
+    {
+        balance = balance - withdraw;
+        Signal(semid, MUTEX);
+    }
+    else
+    {
+        wcount = wcount + 1;
+        AddEndOfList(&list, withdraw);
+        Signal(semid, MUTEX);
+        Wait(semid, WLIST);
+        balance = balance - FirstRequestAmount(&list);
+        DeleteFirstRequest(&list);
+        wcount = wcount - 1;
+        Signal(semid, MUTEX);
+    }
 
 Cleanup:
 

@@ -39,11 +39,12 @@ LinkedList list;
 
 void main(int argc, char * argv[])
 {
-    if (sscanf(argv[1], "%d", &deposit) < 0)
+    if (sscanf(argv[1], "%u", &deposit) < 0)
     {
         perror("sscanf failed\n");
         exit(EXIT_FAILURE);
     }
+
     semid = GetGroup(SEMAPHORE_KEY);
 
     shmid = GetSegment(SEMAPHORE_KEY);
@@ -56,7 +57,7 @@ void main(int argc, char * argv[])
 
     Wait(semid, MUTEX);
     balance = balance + deposit;
-    if (wcount = 0)
+    if (wcount == 0)
     {
         Signal(semid, MUTEX);
     }
