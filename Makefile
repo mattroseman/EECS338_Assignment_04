@@ -15,7 +15,7 @@ main_program_C_OBJS = ${main_program_C_SRCS:.c=.o}
 withdraw_C_OBJS = ${withdraw_C_SRCS:.c=.o}
 deposit_C_OBJS = ${deposit_C_SRCS:.c=.o}
 
-all: $(program_NAME) $(withdraw_NAME)
+all: $(program_NAME) $(withdraw_NAME) $(deposit_NAME)
 
 $(program_NAME): $(main_program_C_OBJS) $(helper_C_OBJS)
 	$(CC) $(helper_C_OBJS) $(main_program_C_OBJS) $(C_FLAGS) -o $(program_NAME)
@@ -24,7 +24,7 @@ $(withdraw_NAME): $(withdraw_C_OBJS) $(helper_C_OBJS)
 	$(CC) $(helper_C_OBJS) $(withdraw_C_OBJS) $(C_FLAGS) -o $(withdraw_NAME)
 
 $(deposit_NAME): $(deposit_C_OBJS) $(helper_C_OBJS)
-	$(CC) $(helper_C_OBJS) $(deposit_C_OBJS) $(C_FLAGS) -o $(withdraw_NAME)
+	$(CC) $(helper_C_OBJS) $(deposit_C_OBJS) $(C_FLAGS) -o $(deposit_NAME)
 
 clean: 
 	@- rm $(program_NAME) $(withdraw_NAME) $(deposit_NAME)
