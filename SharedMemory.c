@@ -7,12 +7,24 @@
 #include "SharedMemory.h"
 
 // Creates a new shared memory segment based off of key and number of bytes size, and returns the segment id
-static int CreateSegment(size_t size)
+static int CreateSegment(key_t key, size_t size)
 {
     int shmid;
-    if ((shmid = shmget(IPC_PRIVATE, size, IPC_CREAT | 0666)) < 0)
+    if ((shmid = shmget(key, size, IPC_CREAT | 0666)) < 0)
     {
         perror("shmget IPC_CREAT failed\n");
+        exit(EXIT_FAILURE);
+    }
+    return shmid;
+}
+
+// Returns the id of an already created Shared Memory Segment
+static int GetSegment(key_t key)
+{
+    int shmid;
+    if ((shmid = shmget(key, 0, 0)) < 0)
+    {
+        perror("shmget no flag failed\n");
         exit(EXIT_FAILURE);
     }
     return shmid;

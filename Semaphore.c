@@ -14,7 +14,7 @@
 static int CreateGroup(key_t key, int n, unsigned short * initVal)
 {
     int returnVal;
-    if((returnVal = semget(key, n, IPC_CREAT | 0666)) < 0)
+    if ((returnVal = semget(key, n, IPC_CREAT | 0666)) < 0)
     {
         perror("Semget with IPC_CREAT failed\n");
         exit(EXIT_FAILURE);
@@ -29,6 +29,17 @@ static int CreateGroup(key_t key, int n, unsigned short * initVal)
     }
 
     return returnVal;
+}
+
+// Gets the id of an already created group
+static int GetGroup(key_t key)
+{
+    int returnVal;
+    if ((returnVal = semget(key, 0, 0)) < 0)
+    {
+        perror("semget no flag failed\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 // Destroys the group with id semid

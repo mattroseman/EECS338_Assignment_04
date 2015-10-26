@@ -10,6 +10,8 @@
 #include "Semaphore.c"
 #include "SharedMemory.c"
 
+#define SEMAPHORE_KEY 64043
+
 // the ID of a semaphore group
 int semid;
 // the ID of the shared memory segment
@@ -18,20 +20,13 @@ char * memaddr;
 
 char * message;
 
-void main (int argc, char *argv[])
+void main ()
 {
     printf("The Withdraw Program with process id %d has started\n", getpid());
 
-    if (sscanf(argv[1], "%d", &semid) == EOF)
-    {
-        perror("sscanf for first argument failed\n");
-        exit(EXIT_FAILURE);
-    }
-    if (sscanf(argv[2], "%d", &shmid) == EOF)
-    {
-        perror("sscanf for second argument failed\n");
-        exit(EXIT_FAILURE);
-    }
+    semid = GetGroup(SEMAPHORE_KEY);
+
+    shmid = GetSegment(SEMAPHORE_KEY);
 
     memaddr = (char *)AttachSegment(shmid);
     printf("Process %d has been attached to the shared memory\n", getpid());

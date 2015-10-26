@@ -39,7 +39,7 @@ unsigned short counters[] = {0,0,0,0};
 // a message to be passed between processes
 char * message;
 
-char * pargs[4];
+char * pargs[2];
 
 int main() 
 {
@@ -73,7 +73,7 @@ int main()
     printf("The second semaphore has been signaled and has value %d\n", GetVal(semid, 1));
 
     // creates a new shared memory segment the size of the message
-    shmid = CreateSegment((size_t)SHM_SIZE);
+    shmid = CreateSegment(SEMAPHORE_KEY, (size_t)SHM_SIZE);
     printf("The shared memory segment with id %d has been created\n", shmid);
 
     memaddr = AttachSegment(shmid);
@@ -81,19 +81,7 @@ int main()
 
     // Assign the arguments for the withdraw program
     pargs[0] = "withdraw";
-    pargs[1] = malloc(MAX_ID_SIZE);
-    if (snprintf(pargs[1], MAX_ID_SIZE, "%d", semid) < 0)
-    {
-        perror("snprintf for first argument failed\n");
-        exit(EXIT_FAILURE);
-    }
-    pargs[2] = malloc(MAX_ID_SIZE);
-    if (snprintf(pargs[2], MAX_ID_SIZE, "%d", shmid) < 0)
-    {
-        perror("snprintf for second argument failed\n");
-        exit(EXIT_FAILURE);
-    }
-    pargs[3] = NULL;
+    pargs[1] = NULL;
 
     //Create a child process and send it a string
     CatchError((pid = fork()), "fork failed\n");
@@ -133,9 +121,6 @@ int main()
     Wait(semid, 3);
 
 Cleanup:
-    free(pargs[1]);
-    free(pargs[2]);
-
     DetachSegment(memaddr);
     printf("The shared memory address at %p assiociated with process %d has been detached\n", memaddr, getpid());
 
