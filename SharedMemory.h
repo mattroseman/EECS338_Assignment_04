@@ -9,4 +9,6 @@ static void * AttachSegment(int);
 
 static void DetachSegment(void *);
 
+static size_t GetSegmentSize(int);
+
 #endif

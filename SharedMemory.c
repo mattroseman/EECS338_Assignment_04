@@ -47,3 +47,14 @@ static void DetachSegment(void * shmaddr)
         exit(EXIT_FAILURE);
     }
 }
+
+static size_t GetSegmentSize(int shmid)
+{
+    struct shmid_ds buf;
+    if (shmctl(shmid, IPC_STAT, &buf) < 0)
+    {
+        perror("shmctl IPC_STAT failed\n");
+        exit(EXIT_FAILURE);
+    }
+    return buf.shm_segsz;
+}

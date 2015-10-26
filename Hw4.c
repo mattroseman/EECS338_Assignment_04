@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <string.h>
 
 #include "Semaphore.c"
 #include "SharedMemory.c"
@@ -12,6 +13,8 @@
 #define SEMAPHORE_KEY 64043
 // the maximum size of the string of the semid in bytes
 #define MAX_ID_SIZE 100
+// maximum of 200 characters for now
+#define SHM_SIZE 200
 
 /* binary semaphore mutex = 1 
  * nonbinary semaphore wlist = 0
@@ -36,7 +39,7 @@ unsigned short counters[] = {0,0,0,0};
 // a message to be passed between processes
 char * message;
 
-char * pargs[3];
+char * pargs[4];
 
 int main() 
 {
@@ -69,9 +72,8 @@ int main()
     Signal(semid, 1);
     printf("The second semaphore has been signaled and has value %d\n", GetVal(semid, 1));
 
-
     // creates a new shared memory segment the size of the message
-    shmid = CreateSegment(sizeof(message));
+    shmid = CreateSegment((size_t)SHM_SIZE);
     printf("The shared memory segment with id %d has been created\n", shmid);
 
     memaddr = AttachSegment(shmid);
@@ -82,10 +84,16 @@ int main()
     pargs[1] = malloc(MAX_ID_SIZE);
     if (snprintf(pargs[1], MAX_ID_SIZE, "%d", semid) < 0)
     {
-        perror("sprintf failed\n");
+        perror("snprintf for first argument failed\n");
         exit(EXIT_FAILURE);
     }
-    pargs[2] = NULL;
+    pargs[2] = malloc(MAX_ID_SIZE);
+    if (snprintf(pargs[2], MAX_ID_SIZE, "%d", shmid) < 0)
+    {
+        perror("snprintf for second argument failed\n");
+        exit(EXIT_FAILURE);
+    }
+    pargs[3] = NULL;
 
     //Create a child process and send it a string
     CatchError((pid = fork()), "fork failed\n");
@@ -96,13 +104,38 @@ int main()
         // the child process is now running the withdraw program 
         CatchError(execvp("./withdraw", pargs), "execvp failed\n");
     }
+
+
+
     printf("Process %d is now waiting for a signal\n", getpid());
     Wait(semid, 0);
 
-    message = "The passed message worked great\n";
+    message = "The passed message worked great";
 
+    // j points to the first spot in shared memory
+    /*char * j = (char *) memaddr;
+    int i;
+
+    // until the end of the string is reached
+    for (i = 0; i < strlen(message) + 1; i++)
+    {
+        // the value of the spot in shared memory equals the value of the current character
+        *j = *(message + i);
+        // move to next spot in shared memory
+        j++;
+    }*/
+    // This should also tack on the NULL (\0) value to the end of the memaddr
+    strcpy(memaddr, message);
+    printf("The message should have been added to shared memory\n");
+
+
+    Signal(semid, 2);
+    Wait(semid, 3);
 
 Cleanup:
+    free(pargs[1]);
+    free(pargs[2]);
+
     DetachSegment(memaddr);
     printf("The shared memory address at %p assiociated with process %d has been detached\n", memaddr, getpid());
 
