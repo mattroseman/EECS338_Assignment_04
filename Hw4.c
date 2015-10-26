@@ -47,7 +47,7 @@ unsigned short initValues[] = {0,0};
 char * pargs[2];
 
 // Assignment variables
-int wcount;
+unsigned int wcount;
 unsigned int balance;
 
 int main() 

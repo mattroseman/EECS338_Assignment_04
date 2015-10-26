@@ -5,7 +5,7 @@ program_NAME = sap
 withdraw_NAME = withdraw
 #receiver_NAME = receiver
 
-helper_C_SRCS = Semaphore.c SharedMemory.c
+helper_C_SRCS = Semaphore.c SharedMemory.c LinkedList.c
 main_program_C_SRCS = Hw4.c
 withdraw_C_SRCS = Withdraw.c
 #receiver_C_SRCS = Receiver.c
