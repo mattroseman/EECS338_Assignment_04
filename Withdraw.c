@@ -11,12 +11,14 @@
 
 // the ID of a semaphore group
 int semid;
+// the ID of the shared memory segment
+int shmid;
 
 void main (int argc, char *argv[])
 {
     printf("The Withdraw Program with process id %d has started\n", getpid());
 
-    if (sscanf(argv[1], "%d", &semid) < 0)
+    if (sscanf(argv[1], "%d", &semid) == EOF)
     {
         perror("sscanf failed");
         exit(EXIT_FAILURE);

@@ -10,6 +10,8 @@
 #include "SharedMemory.c"
 
 #define SEMAPHORE_KEY 64043
+// the maximum size of the string of the semid in bytes
+#define MAX_ID_SIZE 100
 
 /* binary semaphore mutex = 1 
  * nonbinary semaphore wlist = 0
@@ -77,9 +79,8 @@ int main()
 
     // Assign the arguments for the withdraw program
     pargs[0] = "withdraw";
-    printf("%d\n", semid);
-    printf("%s\n", pargs[1]);
-    if (sprintf(pargs[1], "%d", semid) < 0)
+    pargs[1] = malloc(MAX_ID_SIZE);
+    if (snprintf(pargs[1], MAX_ID_SIZE, "%d", semid) < 0)
     {
         perror("sprintf failed\n");
         exit(EXIT_FAILURE);
@@ -95,6 +96,7 @@ int main()
         // the child process is now running the withdraw program 
         CatchError(execvp("./withdraw", pargs), "execvp failed\n");
     }
+    printf("Process %d is now waiting for a signal\n", getpid());
     Wait(semid, 0);
 
     message = "The passed message worked great\n";
