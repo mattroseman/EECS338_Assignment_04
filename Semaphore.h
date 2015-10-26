@@ -10,6 +10,8 @@ union semun {
 
 static int CreateGroup(key_t, int, unsigned short *);
 
+static int GetGroup(key_t);
+
 static void DestroyGroup(int);
 
 // Signal takes in the semaphore group id and the semaphore number in that group

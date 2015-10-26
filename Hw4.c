@@ -7,8 +7,8 @@
 #include <sys/types.h>
 #include <string.h>
 
-#include "Semaphore.c"
-#include "SharedMemory.c"
+#include "Semaphore.h"
+#include "SharedMemory.h"
 #include "LinkedList.h"
 
 #define SEMAPHORE_KEY 64043
@@ -59,6 +59,7 @@ int main()
     semid = CreateGroup(SEMAPHORE_KEY, NUM_SEM, initValues);
 
     // creates a new shared memory segment
+    // The memory follows format wcount, then balance, then list pointer
     shmid = CreateSegment(SEMAPHORE_KEY, SHM_SIZE);
 
     // Attach the memory segment to this process and get the address

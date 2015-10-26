@@ -7,10 +7,21 @@
 #include <sys/types.h>
 #include <string.h>
 
-#include "Semaphore.c"
-#include "SharedMemory.c"
+#include "Semaphore.h"
+#include "SharedMemory.h"
+#include "LinkedList.h"
 
 #define SEMAPHORE_KEY 64043
+// The number of semaphores used
+#define NUM_SEM 2
+// The size of shared memory
+// size of two insigned integers and a pointer to a linked list
+#define SHM_SIZE (2*sizeof(unsigned int) + sizeof(LinkedList *))
+// Binary Semaphore
+#define MUTEX 0
+// Nonbinary Semaphores
+#define WLIST 1
+
 
 // the ID of a semaphore group
 int semid;
@@ -18,42 +29,18 @@ int semid;
 int shmid;
 char * memaddr;
 
-char * message;
-
 // takes one argument, the amount to be withdrawn
 void main (int argc, char * argv[])
 {
-    //TODO
-    //take in the argument of the amount to withdraw
-    printf("The Withdraw Program with process id %d has started\n", getpid());
-
     semid = GetGroup(SEMAPHORE_KEY);
 
     shmid = GetSegment(SEMAPHORE_KEY);
 
     memaddr = (char *)AttachSegment(shmid);
-    printf("Process %d has been attached to the shared memory\n", getpid());
 
-    // find the size of the segment and allocate space for message
-    message = malloc(GetSegmentSize(shmid));
+Cleanup:
 
-    // signals the first semphore in the semaphore group
-    Signal(semid, 0);
-    printf("The first semaphore in semaphore group %d has been signaled\n", semid);
-    // wait for Hw4 to put the message into shared memory
-    Wait(semid, 2);
-    printf("Withdraw has started up again\n");
-
-    strcpy(message, memaddr);
-    printf("The message should have been copied\n");
-
-    printf("The message is %s\n", message);
-    
     DetachSegment(memaddr);
-    printf("Process %d has been detached from the shared memory\n", getpid());
 
-    Signal(semid, 3);
-
-    free(message);
     exit(EXIT_SUCCESS);
 }
