@@ -22,6 +22,10 @@
 // Nonbinary Semaphores
 #define WLIST 1
 
+// a string that precedes every output string
+char * signature;
+// a string to precede CS messages
+char * cssignature;
 
 // the ID of a semaphore group
 int semid;
@@ -39,11 +43,27 @@ LinkedList list;
 
 void main(int argc, char * argv[])
 {
+    signature = malloc(100);
+    if (sprintf(signature, "%s%d%s", "--- PID: ", getpid(), ": ") < 0)
+    {
+        perror("sprintf failed\n");
+        exit(EXIT_FAILURE);
+    }
+
+    cssignature = malloc(100);
+    if (sprintf(cssignature, "%s%d%s", "*** PID: ", getpid(), ": ") < 0)
+    {
+        perror("sprintf failed\n");
+        exit(EXIT_FAILURE);
+    }
+
     if (sscanf(argv[1], "%u", &deposit) < 0)
     {
         perror("sscanf failed\n");
         exit(EXIT_FAILURE);
     }
+
+    printf("%sStarting Deposit Process with amount %u\n", signature, deposit);
 
     semid = GetGroup(SEMAPHORE_KEY);
 
@@ -51,16 +71,25 @@ void main(int argc, char * argv[])
 
     memaddr = (void *)AttachSegment(shmid);
 
+    printf("%sAttached to shared memory segment %d at address %p\n", signature, shmid, memaddr);
+
     wcount = *(unsigned int *)memaddr;
     balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
     list = *(LinkedList *)(memaddr + 2*sizeof(unsigned int));
 
+
     Wait(semid, MUTEX);
+    printf("%sEntering Critical Section", cssignature);
+
     balance = balance + deposit;
+    printf("%sDepositing %u\n", signature, deposit);
+    printf("%sNew Balance = %u\n", signature, balance);
+
     // if there aren't any withdraw processes waiting
     if (wcount == 0)
     {
         // signal the next withdraw or deposit process
+        printf("%sExiting Critical Section\n", cssignature);
         Signal(semid, MUTEX);
     }
     else 
@@ -69,17 +98,21 @@ void main(int argc, char * argv[])
         if (FirstRequestAmount(&list) > balance)
         {
             // keep them waiting for a bigger deposit
+            printf("%sExiting Critical Section\n", cssignature);
             Signal(semid, MUTEX);
         }
         // if there are some waiting and there is enough to withdraw
         else
         {
             // signal the waiting withdraw process to proceed and withdraw
+            printf("%sExiting Critical Section\n", cssignature);
             Signal(semid, WLIST);
         }
     }
 
 Cleanup:
+
+    printf("%sDeposit is complete\n", signature);
 
     DetachSegment(memaddr);
 

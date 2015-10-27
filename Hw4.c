@@ -34,6 +34,8 @@ void StartWithdraw(unsigned int amount);
 void StartDeposit(unsigned int amount);
 
 int pid;
+// What every message by this process starts with
+char * signature;
 
 // The identifier for the semaphore group that will be made
 int semid;
@@ -54,22 +56,35 @@ unsigned int balance;
 LinkedList list;
 
 int main() 
-{
+{ 
+    signature = malloc(100);
+    if (sprintf(signature, "%s%d%s", "--- PID: ", getpid(), ": ") < 0)
+    {
+        perror("sprintf failed\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("%sStarting Main process\n", signature);
+
     // IPC_CREAT signals to make new group if key doesn't already exist
     semid = CreateGroup(SEMAPHORE_KEY, NUM_SEM, initValues);
+    printf("%sNew Semaphore Group %d has been created\n", signature, semid);
     // mutex starts as 1
     Signal(semid, MUTEX);
 
     // creates a new shared memory segment
     // The memory follows format wcount, then balance, then list pointer
     shmid = CreateSegment(SEMAPHORE_KEY, SHM_SIZE);
+    printf("%sNew Shared Memory Segment %d has been created\n", signature, shmid);
 
     // Attach the memory segment to this process and get the address
     memaddr = AttachSegment(shmid);
+    printf("%sThe memory segment %d has been attached to this process at address %p\n", signature, shmid, memaddr);
 
     // Initialize and put the data into shared memory
     wcount = 0;
+    printf("%swcount = %u\n", signature, wcount);
     balance = 500;
+    printf("%sbalance = %u\n", signature, balance);
 
     *(unsigned int *)memaddr = wcount;
     *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
