@@ -41,17 +41,19 @@ unsigned int wcount;
 unsigned int balance;
 LinkedList list;
 
+unsigned int oldbalance;
+
 void main(int argc, char * argv[])
 {
     signature = malloc(100);
-    if (sprintf(signature, "%s%d%s", "--- PID: ", getpid(), ": ") < 0)
+    if (sprintf(signature, "%s%d%s", "--- PID: ", getpid(), " (deposit): ") < 0)
     {
         perror("sprintf failed\n");
         exit(EXIT_FAILURE);
     }
 
     cssignature = malloc(100);
-    if (sprintf(cssignature, "%s%d%s", "*** PID: ", getpid(), ": ") < 0)
+    if (sprintf(cssignature, "%s%d%s", "*** (deposit) PID: ", getpid(), " (deposit): ") < 0)
     {
         perror("sprintf failed\n");
         exit(EXIT_FAILURE);
@@ -63,7 +65,8 @@ void main(int argc, char * argv[])
         exit(EXIT_FAILURE);
     }
 
-    printf("%sStarting Deposit Process with amount %u\n", signature, deposit);
+    printf("%sDeposit Process with amount %u has started\n", signature, deposit);
+    sleep(2);
 
     semid = GetGroup(SEMAPHORE_KEY);
 
@@ -71,7 +74,8 @@ void main(int argc, char * argv[])
 
     memaddr = (void *)AttachSegment(shmid);
 
-    printf("%sAttached to shared memory segment %d at address %p\n", signature, shmid, memaddr);
+    //printf("%sAttached to shared memory segment %d at address %p\n", signature, shmid, memaddr);
+    //sleep(2);
 
     wcount = *(unsigned int *)memaddr;
     balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
@@ -79,17 +83,30 @@ void main(int argc, char * argv[])
 
 
     Wait(semid, MUTEX);
-    printf("%sEntering Critical Section", cssignature);
+    printf("\n%sEntering Critical Section\n", cssignature);
+
+    sleep(4);
+
+    oldbalance = balance;
 
     balance = balance + deposit;
-    printf("%sDepositing %u\n", signature, deposit);
-    printf("%sNew Balance = %u\n", signature, balance);
+    printf("%sDepositing %u\n", cssignature, deposit);
+    sleep(2);
+    printf("%sNew Balance = %u\n", cssignature, balance);
+    sleep(2);
+    printf("%s%u + %u = %u", cssignature, oldbalance, deposit, balance);
+    sleep(2);
+
+    //TODO update shared memory
+
+    sleep(4);
 
     // if there aren't any withdraw processes waiting
     if (wcount == 0)
     {
         // signal the next withdraw or deposit process
-        printf("%sExiting Critical Section\n", cssignature);
+        printf("%sExiting Critical Section\n\n", cssignature);
+        sleep(2);
         Signal(semid, MUTEX);
     }
     else 
@@ -98,14 +115,16 @@ void main(int argc, char * argv[])
         if (FirstRequestAmount(&list) > balance)
         {
             // keep them waiting for a bigger deposit
-            printf("%sExiting Critical Section\n", cssignature);
+            printf("%sExiting Critical Section\n\n", cssignature);
+            sleep(2);
             Signal(semid, MUTEX);
         }
         // if there are some waiting and there is enough to withdraw
         else
         {
             // signal the waiting withdraw process to proceed and withdraw
-            printf("%sExiting Critical Section\n", cssignature);
+            printf("%sExiting Critical Section\n\n", cssignature);
+            sleep(2);
             Signal(semid, WLIST);
         }
     }
@@ -113,6 +132,10 @@ void main(int argc, char * argv[])
 Cleanup:
 
     printf("%sDeposit is complete\n", signature);
+    sleep(2);
+
+    free(signature);
+    free(cssignature);
 
     DetachSegment(memaddr);
 
