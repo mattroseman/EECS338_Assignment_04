@@ -22,6 +22,11 @@
 // Nonbinary Semaphores
 #define WLIST 1
 
+
+void UpdateSHM();
+void GetSHM();
+
+
 // a string that precedes every output string
 char * signature;
 // a string to precede CS messages
@@ -39,7 +44,7 @@ unsigned int deposit;
 // found from storage
 unsigned int wcount;
 unsigned int balance;
-LinkedList list;
+LinkedList *list;
 
 unsigned int oldbalance;
 
@@ -77,13 +82,11 @@ void main(int argc, char * argv[])
     //printf("%sAttached to shared memory segment %d at address %p\n", signature, shmid, memaddr);
     //sleep(2);
 
-    wcount = *(unsigned int *)memaddr;
-    balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
-    list = *(LinkedList *)(memaddr + 2*sizeof(unsigned int));
-
+    GetSHM();
 
     Wait(semid, MUTEX);
     printf("\n%sEntering Critical Section\n", cssignature);
+    GetSHM();
 
     sleep(4);
 
@@ -92,12 +95,11 @@ void main(int argc, char * argv[])
     balance = balance + deposit;
     printf("%sDepositing %u\n", cssignature, deposit);
     sleep(2);
-    printf("%sNew Balance = %u\n", cssignature, balance);
-    sleep(2);
     printf("%s%u + %u = %u", cssignature, oldbalance, deposit, balance);
     sleep(2);
+    printf("%sNew Balance = %u\n", cssignature, balance);
+    sleep(2);
 
-    //TODO update shared memory
 
     sleep(4);
 
@@ -106,16 +108,18 @@ void main(int argc, char * argv[])
     {
         // signal the next withdraw or deposit process
         printf("%sExiting Critical Section\n\n", cssignature);
+        UpdateSHM();
         sleep(2);
         Signal(semid, MUTEX);
     }
     else 
     {
         // if there are some waiting and there is not enough to withdraw now
-        if (FirstRequestAmount(&list) > balance)
+        if (FirstRequestAmount(list) > balance)
         {
             // keep them waiting for a bigger deposit
             printf("%sExiting Critical Section\n\n", cssignature);
+            UpdateSHM();
             sleep(2);
             Signal(semid, MUTEX);
         }
@@ -124,6 +128,7 @@ void main(int argc, char * argv[])
         {
             // signal the waiting withdraw process to proceed and withdraw
             printf("%sExiting Critical Section\n\n", cssignature);
+            UpdateSHM();
             sleep(2);
             Signal(semid, WLIST);
         }
@@ -140,4 +145,18 @@ Cleanup:
     DetachSegment(memaddr);
 
     exit(EXIT_SUCCESS);
+}
+
+void UpdateSHM()
+{
+    *(unsigned int *)memaddr = wcount;
+    *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
+    *(LinkedList **)(memaddr + 2*sizeof(unsigned int)) = list;
+}
+
+void GetSHM()
+{
+    wcount = *(unsigned int *)memaddr;
+    balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
+    list = *(LinkedList **)(memaddr + 2*sizeof(unsigned int));
 }

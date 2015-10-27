@@ -22,6 +22,11 @@
 // Nonbinary Semaphores
 #define WLIST 1
 
+
+void UpdateSHM();
+void GetSHM();
+
+
 // a string that precedes every output string
 char * signature;
 // a string to precede CS messages
@@ -37,7 +42,7 @@ unsigned int withdraw;
 
 unsigned int wcount;
 unsigned int balance;
-LinkedList list;
+LinkedList *list;
 
 unsigned int oldbalance;
 
@@ -76,12 +81,11 @@ void main (int argc, char * argv[])
     //printf("%sAttached to shared memory segment %d at address %p\n", signature, shmid, memaddr);
     //sleep(2);
 
-    wcount = *(unsigned int *)memaddr;
-    balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
-    list = *(LinkedList *)(memaddr + 2*sizeof(unsigned int));
+    GetSHM();
 
     Wait(semid, MUTEX);
     printf("\n%sEntering Critical Section\n", cssignature);
+    GetSHM();
 
     sleep(4);
 
@@ -93,16 +97,16 @@ void main (int argc, char * argv[])
         balance = balance - withdraw;
         printf("%sWithdrawing %u\n", cssignature, withdraw);
         sleep(2);
-        printf("%sNew Balance = %u\n", cssignature, balance);
-        sleep(2);
         printf("%s%u - %u = %u\n", cssignature, oldbalance, withdraw, balance);
         sleep(2);
-
-        //TODO update the shared memory
+        printf("%sNew Balance = %u\n", cssignature, balance);
+        sleep(2);
 
         sleep(4);
 
         printf("%sExiting Critical Section\n\n", cssignature);
+        UpdateSHM();
+
         Signal(semid, MUTEX);
     }
     // either there are other withdrawl requests waiting or there isn't enough balance
@@ -110,7 +114,7 @@ void main (int argc, char * argv[])
     {
         // add a withdraw process to the wait list
         wcount = wcount + 1;
-        AddEndOfList(&list, withdraw);
+        AddEndOfList(list, withdraw);
 
         // this process is signaling so more withdraw/deposit processes can start up
         Signal(semid, MUTEX);
@@ -120,30 +124,35 @@ void main (int argc, char * argv[])
         sleep(4);
 
         printf("\n%sExiting Critical Section\n", cssignature);
+        UpdateSHM();
         sleep(2);
         Wait(semid, WLIST);
         printf("\n%sEntering Critical Section\n", cssignature);
+        GetSHM();
 
         sleep(4);
 
-        balance = balance - FirstRequestAmount(&list);
-        printf("%sWithdrawing %u\n", cssignature, FirstRequestAmount(&list));
+        oldbalance = balance;
+
+        balance = balance - FirstRequestAmount(list);
+        printf("%sWithdrawing %u\n", cssignature, FirstRequestAmount(list));
+        sleep(2);
+        printf("%s%u - %u = %u\n", cssignature, oldbalance, withdraw, balance);
         sleep(2);
         printf("%sNew Balance = %u\n", cssignature, balance);
         sleep(2);
-        DeleteFirstRequest(&list);
+        DeleteFirstRequest(list);
         // this withdraw is done waiting
         wcount = wcount - 1;
 
         sleep(4);
 
-        //TODO update shared memory
-
         // if there are still withdraw processes waiting and there is enough to withdraw
-        if (wcount > 1 && FirstRequestAmount(&list) < balance)
+        if (wcount > 1 && FirstRequestAmount(list) < balance)
         {
             // signal for the waiting withdraw process to go
             printf("%sExiting Critical Section\n\n", cssignature);
+            UpdateSHM();
             sleep(2);
             Signal(semid, WLIST);
         }
@@ -152,6 +161,7 @@ void main (int argc, char * argv[])
         {
             // let another deposit or withdraw process run (although a withdraw process is just going to go straight to the queue
             printf("%sExiting Critical Section\n\n", cssignature);
+            UpdateSHM();
             sleep(2);
             Signal(semid, MUTEX);
         }
@@ -168,4 +178,25 @@ Cleanup:
     DetachSegment(memaddr);
 
     exit(EXIT_SUCCESS);
+}
+
+// uploads to the shared memory the new values
+void UpdateSHM()
+{
+    // The value at the end of the unsigned integer pointer is wcount
+    *(unsigned int *)memaddr = wcount;
+    // The value at the end of the second unsigned integer pointer is balance
+    *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
+    // the value at the end of the pointer to the pointer to a LinkedList 
+    // (which is a pointer to a linked list)
+    // equals the pointer to list
+    *(LinkedList **)(memaddr + 2*sizeof(unsigned int)) = list;
+}
+
+// gets the new values from shared memory and assigns them to the appropriate variables
+void GetSHM()
+{
+    wcount = *(unsigned int *)memaddr;
+    balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
+    list = *(LinkedList **)(memaddr + 2*sizeof(unsigned int));
 }

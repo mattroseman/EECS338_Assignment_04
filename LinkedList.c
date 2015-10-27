@@ -1,59 +1,64 @@
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "LinkedList.h"
 
 /* Initialize a new empty linked list */
-LinkedList NewLinkedList()
+LinkedList * NewLinkedList()
 {
-    LinkedList list;
-    // gets the pointer to the lists head, derefrence and get pointer to nextNode
-    (*list.head).nextNode = list.tail;
-    (*list.tail).prevNode = list.head;
+    LinkedList *list;
+
+    printf("checkpoint 1 reached\n");
+
+    list->head->nextNode = list->tail;
+    list->tail->prevNode = list->head;
+
+    printf("checkpoint 2 reached\n");
+
+    // do it in this order so that sizeof(list) is correct
+    LinkedList *returnList = (LinkedList *)malloc(sizeof(*list));
+    printf("checkpoint 3 reached\n");
+    *returnList = *list;
+    printf("checkpoint 4 reached\n");;
+
+    return returnList;
+}
+
+void DestroyLinkedList(LinkedList *A)
+{
+    free(A);
 }
 
 /* Add the element val to the end of the linked list A */
 void AddEndOfList(LinkedList *A, unsigned int val)
 {
-    // list is the dereferenced list
-    LinkedList list = *A;
-    Node temp;
-    Node newNode;
-    newNode.value = val;
-    // newNode pointer to next node equals list's pointer to tail
-    newNode.nextNode = list.tail;
-    // newNode pointer to previous node equals list's tail node's pointer to previous node
-    newNode.prevNode = (*list.tail).prevNode;
-    // list's tail node's previous pointer points to the newNode
-    (*list.tail).prevNode = &newNode;
-    // newNode's previous node points to newNode instead of tail
-    (*newNode.prevNode).nextNode = &newNode;
+    Node *newNode = (Node *)malloc(sizeof(Node));
+    newNode->value = val;
+    newNode->nextNode = A->tail;
+    newNode->prevNode = A->tail->prevNode;
+    A->tail->prevNode = newNode;
+    newNode->prevNode->nextNode = newNode;
 }
 
 /* Remove the first element from linked list A */
 void DeleteFirstRequest(LinkedList *A)
 {
-    LinkedList list = *A;
-    // if the head doesn't point to the tail the list isn't empty
-    if ((*list.head).nextNode != list.tail)
+    if (A->head->nextNode != A->tail)
     {
-        // temp equals a pointer to the second node in the list
-        Node *temp = (*(*list.head).nextNode).nextNode;
-        // head's nextNode equal the pointer to the second node
-        (*list.head).nextNode = temp;
-        // second nodes prevNode equals the pointer to the list's head
-        (*temp).prevNode = list.head;
+        Node *temp = A->head->nextNode->nextNode;
+        free(A->head->nextNode);
+        A->head->nextNode = temp;
+        temp->prevNode = A->head;
     }
-    // If the list is empty do nothing
 }
 
 /* Get the value of the first node in linked list A */
 /* Returns -1 if the list is empty */
 int FirstRequestAmount(LinkedList *A)
 {
-    LinkedList list = *A;
-    // if the head doesn't point to the tail the list isn't empty
-    if ((*list.head).nextNode != list.tail)
+    if (A->head->nextNode != A->tail)
     {
-        // the heads nextNodes value
-        return (*(*list.head).nextNode).value;
+        return A->head->nextNode->value;
     }
     return -1;
 }

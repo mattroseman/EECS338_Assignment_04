@@ -14,9 +14,6 @@
 #define SEMAPHORE_KEY 64043
 // The number of semaphores used
 #define NUM_SEM 2
-// The size of shared memory
-// size of two insigned integers and a pointer to a linked list
-#define SHM_SIZE (2*sizeof(unsigned int) + sizeof(LinkedList *))
 // Binary Semaphore
 #define MUTEX 0
 // Nonbinary Semaphores
@@ -46,7 +43,7 @@ char * pargs[3];
 // Assignment variables
 unsigned int wcount;
 unsigned int balance;
-LinkedList list;
+LinkedList *list;
 
 /*
  * TODO 
@@ -71,9 +68,20 @@ int main()
     // mutex starts as 1
     Signal(semid, MUTEX);
 
+    // Initialize
+    wcount = 0;
+    printf("%swcount = %u\n", signature, wcount);
+    sleep(2);
+    balance = 500;
+    printf("%sbalance = %u\n", signature, balance);
+    sleep(2);
+    list = NewLinkedList();
+    printf("%sThe linked list has been initialized\n", signature);
+    sleep(2);
+
     // creates a new shared memory segment
     // The memory follows format wcount, then balance, then list pointer
-    shmid = CreateSegment(SEMAPHORE_KEY, SHM_SIZE);
+    shmid = CreateSegment(SEMAPHORE_KEY, (2*sizeof(unsigned int) + sizeof(list)));
     printf("%sNew Shared Memory Segment %d has been created\n", signature, shmid);
     sleep(2);
 
@@ -82,18 +90,13 @@ int main()
     printf("%sThe memory segment %d has been attached to this process at address %p\n", signature, shmid, memaddr);
     sleep(2);
 
-    // Initialize and put the data into shared memory
-    wcount = 0;
-    printf("%swcount = %u\n", signature, wcount);
-    sleep(2);
-    balance = 500;
-    printf("%sbalance = %u\n", signature, balance);
-    sleep(2);
-
+    // Put data into shared memory
     *(unsigned int *)memaddr = wcount;
     *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
-    // the third data element is a pointer to a linked list pointer
-    *(LinkedList **)(memaddr + 2*sizeof(unsigned int)) = &list;
+    // the third data element is a pointer to a linked list
+    *(LinkedList **)(memaddr + 2*sizeof(unsigned int)) = list;
+
+    printf("%sVariables have been put into shared memory\n", signature);
 
     // An infinite loop that randomly deposits and withdraws at most every 10 seconds and least 1 second
     while(1==1)
@@ -131,6 +134,8 @@ int main()
 Cleanup:
 
     free(signature);
+
+    DestroyLinkedList(list);
 
     DetachSegment(memaddr);
 

@@ -14,7 +14,9 @@ typedef struct LinkedList
     Node *tail;
 }LinkedList;
 
-LinkedList NewLinkedList();
+LinkedList * NewLinkedList();
+
+void DestroyLinkedList();
 
 void AddEndOfList(LinkedList *, unsigned int);
 
