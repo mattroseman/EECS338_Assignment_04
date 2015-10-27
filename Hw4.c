@@ -57,6 +57,8 @@ int main()
 {
     // IPC_CREAT signals to make new group if key doesn't already exist
     semid = CreateGroup(SEMAPHORE_KEY, NUM_SEM, initValues);
+    // mutex starts as 1
+    Signal(semid, MUTEX);
 
     // creates a new shared memory segment
     // The memory follows format wcount, then balance, then list pointer
@@ -65,12 +67,15 @@ int main()
     // Attach the memory segment to this process and get the address
     memaddr = AttachSegment(shmid);
 
+    // Initialize and put the data into shared memory
+    wcount = 0;
+    balance = 500;
 
-    if (pid == 0)
-    {
-        // the child process is now running the withdraw program 
-        CatchError(execvp("./withdraw", pargs), "execvp failed\n");
-    }
+    *(unsigned int *)memaddr = wcount;
+    *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
+    // the third data element is a pointer to a linked list pointer
+    *(LinkedList **)(memaddr + 2*sizeof(unsigned int)) = &list;
+
 
 Cleanup:
 
@@ -98,17 +103,26 @@ void StartWithdraw(unsigned int withdrawAmount)
     pargs[0] = "withdraw";
     sscanf(pargs[1], "%u", &amount);
     
-    CatchError((pid = fork()), "fork failed\n");
+    CatchError((pid = fork()), "withdraw fork failed\n");
     // If the process is the child process
     if (pid == 0)
     {
         // the child process is now running the withdraw program 
-        CatchError(execvp("./withdraw", pargs), "execvp failed\n");
+        CatchError(execvp("./withdraw", pargs), "withdraw execvp failed\n");
     }
     // else continue like normal
 }
 
-void StartDeposit(unsigned int amount)
+void StartDeposit(unsigned int depositAmount)
 {
+    unsigned int amount = depositAmount;
+    pargs[0] = "deposit";
+    sscanf(pargs[1], "%u", &amount);
 
+    CatchError((pid = fork()), "deposit fork failed\n");
+
+    if (pid == 0)
+    {
+        CatchError(execvp("./deposit", pargs), "deposit execvp failed\n");
+    }
 }
