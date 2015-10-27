@@ -57,17 +57,26 @@ void main(int argc, char * argv[])
 
     Wait(semid, MUTEX);
     balance = balance + deposit;
+    // if there aren't any withdraw processes waiting
     if (wcount == 0)
     {
+        // signal the next withdraw or deposit process
         Signal(semid, MUTEX);
     }
-    else if (FirstRequestAmount(&list) > balance)
+    else 
     {
-        Signal(semid, MUTEX);
-    }
-    else
-    {
-        Signal(semid, WLIST);
+        // if there are some waiting and there is not enough to withdraw now
+        if (FirstRequestAmount(&list) > balance)
+        {
+            // keep them waiting for a bigger deposit
+            Signal(semid, MUTEX);
+        }
+        // if there are some waiting and there is enough to withdraw
+        else
+        {
+            // signal the waiting withdraw process to proceed and withdraw
+            Signal(semid, WLIST);
+        }
     }
 
 Cleanup:

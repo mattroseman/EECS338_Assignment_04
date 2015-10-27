@@ -1,0 +1,158 @@
+george@ubuntu:/mnt/hgfs/SharedWithVM/gmh73_HW4$ ./cars eeeeeeeeeeee
+*** Hello World! I am 3135.
+*** PID: 3135: I have been called with the following argument: `eeeeeeeeeeee`.
+*** PID: 3142: I am an East Bound Car!
+--- PID: 3142: E: Waiting on Mutex.
+*** PID: 3143: I am an East Bound Car!
+*** PID: 3141: I am an East Bound Car!
+--- PID: 3141: E: Waiting on Mutex.
+*** PID: 3140: I am an East Bound Car!
+--- PID: 3142: E: Passed Mutex.
+--- PID: 3142: E: It's my turn -- Going to Cross.
+	 Shared Variables status at PID 3142: XingCount = 1, XedCount = 0, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+--- PID: 3142: E: Signaling MUTEX.
+@@@ PID: 3142: E: I am crossing the bridge!.
+--- PID: 3143: E: Waiting on Mutex.
+*** PID: 3144: I am an East Bound Car!
+--- PID: 3140: E: Waiting on Mutex.
+--- PID: 3141: E: Passed Mutex.
+--- PID: 3141: E: It's my turn -- Going to Cross.
+	 Shared Variables status at PID 3141: XingCount = 2, XedCount = 0, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+--- PID: 3141: E: Signaling MUTEX.
+@@@ PID: 3141: E: I am crossing the bridge!.
+@@@ PID: 3141: E: Crossed the bridge -- Waiting for MUTEX!.
+@@@ PID: 3142: E: Crossed the bridge -- Waiting for MUTEX!.
+*** PID: 3139: I am an East Bound Car!
+--- PID: 3143: E: Passed Mutex.
+--- PID: 3143: E: It's my turn -- Going to Cross.
+	 Shared Variables status at PID 3143: XingCount = 3, XedCount = 0, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+--- PID: 3143: E: Signaling MUTEX.
+@@@ PID: 3143: E: I am crossing the bridge!.
+@@@ PID: 3143: E: Crossed the bridge -- Waiting for MUTEX!.
+--- PID: 3144: E: Waiting on Mutex.
+*** PID: 3145: I am an East Bound Car!
+--- PID: 3145: E: Waiting on Mutex.
+*** PID: 3146: I am an East Bound Car!
+--- PID: 3146: E: Waiting on Mutex.
+*** PID: 3138: I am an East Bound Car!
+--- PID: 3138: E: Waiting on Mutex.
+*** PID: 3147: I am an East Bound Car!
+--- PID: 3140: E: Passed Mutex.
+--- PID: 3140: E: It's my turn -- Going to Cross.
+	 Shared Variables status at PID 3140: XingCount = 4, XedCount = 0, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+--- PID: 3140: E: Signaling MUTEX.
+--- PID: 3139: E: Waiting on Mutex.
+@@@ PID: 3140: E: I am crossing the bridge!.
+@@@ PID: 3140: E: Crossed the bridge -- Waiting for MUTEX!.
+--- PID: 3147: E: Waiting on Mutex.
+@@@ PID: 3142: E: Passed MUTEX!.
+	 Shared Variables status at PID 3142: XingCount = 3, XedCount = 1, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+@@@ PID: 3142: E: Signaling Mutex.
+@@@ PID: 3141: E: Passed MUTEX!.
+	 Shared Variables status at PID 3141: XingCount = 2, XedCount = 2, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+@@@ PID: 3141: E: Signaling Mutex.
+--- PID: 3144: E: Passed Mutex.
+--- PID: 3144: E: It's my turn -- Going to Cross.
+	 Shared Variables status at PID 3144: XingCount = 3, XedCount = 2, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+--- PID: 3144: E: Signaling MUTEX.
+@@@ PID: 3144: E: I am crossing the bridge!.
+@@@ PID: 3144: E: Crossed the bridge -- Waiting for MUTEX!.
+*** PID: 3137: I am an East Bound Car!
+--- PID: 3145: E: Passed Mutex.
+--- PID: 3145: E: It's my turn -- Going to Cross.
+	 Shared Variables status at PID 3145: XingCount = 4, XedCount = 2, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+--- PID: 3145: E: Signaling MUTEX.
+@@@ PID: 3145: E: I am crossing the bridge!.
+--- PID: 3146: E: Passed Mutex.
+--- PID: 3146: E: I have to wait.
+	 Shared Variables status at PID 3146: XingCount = 4, XedCount = 2, EastBndWaitCount = 1, WestBndWaitCount = 0, Dir = 1
+--- PID: 3146: E: Signaling Mutex.
+--- PID: 3139: E: Passed Mutex.
+--- PID: 3139: E: I have to wait.
+	 Shared Variables status at PID 3139: XingCount = 4, XedCount = 2, EastBndWaitCount = 2, WestBndWaitCount = 0, Dir = 1
+--- PID: 3139: E: Signaling Mutex.
+--- PID: 3138: E: Passed Mutex.
+--- PID: 3138: E: I have to wait.
+	 Shared Variables status at PID 3138: XingCount = 4, XedCount = 2, EastBndWaitCount = 3, WestBndWaitCount = 0, Dir = 1
+--- PID: 3138: E: Signaling Mutex.
+@@@ PID: 3143: E: Passed MUTEX!.
+	 Shared Variables status at PID 3143: XingCount = 3, XedCount = 3, EastBndWaitCount = 3, WestBndWaitCount = 0, Dir = 1
+@@@ PID: 3143: E: Signaling a waiting east bound car!.
+--- PID: 3146: E: Was waiting, now I'm signaled.
+	 Shared Variables status at PID 3146: XingCount = 4, XedCount = 3, EastBndWaitCount = 2, WestBndWaitCount = 0, Dir = 1
+--- PID: 3146: E: Going to cross.
+	 Shared Variables status at PID 3146: XingCount = 4, XedCount = 3, EastBndWaitCount = 2, WestBndWaitCount = 0, Dir = 1
+--- PID: 3146: E: Signaling MUTEX.
+@@@ PID: 3146: E: I am crossing the bridge!.
+--- PID: 3147: E: Passed Mutex.
+--- PID: 3147: E: I have to wait.
+	 Shared Variables status at PID 3147: XingCount = 4, XedCount = 3, EastBndWaitCount = 3, WestBndWaitCount = 0, Dir = 1
+--- PID: 3147: E: Signaling Mutex.
+@@@ PID: 3140: E: Passed MUTEX!.
+	 Shared Variables status at PID 3140: XingCount = 3, XedCount = 4, EastBndWaitCount = 3, WestBndWaitCount = 0, Dir = 1
+@@@ PID: 3140: E: Signaling a waiting east bound car!.
+--- PID: 3139: E: Was waiting, now I'm signaled.
+	 Shared Variables status at PID 3139: XingCount = 4, XedCount = 4, EastBndWaitCount = 2, WestBndWaitCount = 0, Dir = 1
+--- PID: 3139: E: Going to cross.
+	 Shared Variables status at PID 3139: XingCount = 4, XedCount = 4, EastBndWaitCount = 2, WestBndWaitCount = 0, Dir = 1
+--- PID: 3139: E: Signaling MUTEX.
+@@@ PID: 3139: E: I am crossing the bridge!.
+@@@ PID: 3139: E: Crossed the bridge -- Waiting for MUTEX!.
+@@@ PID: 3145: E: Crossed the bridge -- Waiting for MUTEX!.
+@@@ PID: 3146: E: Crossed the bridge -- Waiting for MUTEX!.
+@@@ PID: 3144: E: Passed MUTEX!.
+	 Shared Variables status at PID 3144: XingCount = 3, XedCount = 5, EastBndWaitCount = 2, WestBndWaitCount = 0, Dir = 1
+@@@ PID: 3144: E: Signaling a waiting east bound car!.
+--- PID: 3138: E: Was waiting, now I'm signaled.
+	 Shared Variables status at PID 3138: XingCount = 4, XedCount = 5, EastBndWaitCount = 1, WestBndWaitCount = 0, Dir = 1
+--- PID: 3138: E: Going to cross.
+	 Shared Variables status at PID 3138: XingCount = 4, XedCount = 5, EastBndWaitCount = 1, WestBndWaitCount = 0, Dir = 1
+--- PID: 3138: E: Signaling MUTEX.
+@@@ PID: 3138: E: I am crossing the bridge!.
+@@@ PID: 3138: E: Crossed the bridge -- Waiting for MUTEX!.
+--- PID: 3137: E: Waiting on Mutex.
+@@@ PID: 3139: E: Passed MUTEX!.
+	 Shared Variables status at PID 3139: XingCount = 3, XedCount = 6, EastBndWaitCount = 1, WestBndWaitCount = 0, Dir = 1
+@@@ PID: 3139: E: Signaling a waiting east bound car!.
+--- PID: 3147: E: Was waiting, now I'm signaled.
+	 Shared Variables status at PID 3147: XingCount = 4, XedCount = 6, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+--- PID: 3147: E: Going to cross.
+	 Shared Variables status at PID 3147: XingCount = 4, XedCount = 6, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+--- PID: 3147: E: Signaling MUTEX.
+@@@ PID: 3147: E: I am crossing the bridge!.
+@@@ PID: 3147: E: Crossed the bridge -- Waiting for MUTEX!.
+@@@ PID: 3146: E: Passed MUTEX!.
+	 Shared Variables status at PID 3146: XingCount = 3, XedCount = 7, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+@@@ PID: 3146: E: Signaling Mutex.
+@@@ PID: 3145: E: Passed MUTEX!.
+	 Shared Variables status at PID 3145: XingCount = 2, XedCount = 8, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+@@@ PID: 3145: E: Signaling Mutex.
+--- PID: 3137: E: Passed Mutex.
+--- PID: 3137: E: It's my turn -- Going to Cross.
+	 Shared Variables status at PID 3137: XingCount = 3, XedCount = 8, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+--- PID: 3137: E: Signaling MUTEX.
+@@@ PID: 3137: E: I am crossing the bridge!.
+@@@ PID: 3147: E: Passed MUTEX!.
+	 Shared Variables status at PID 3147: XingCount = 2, XedCount = 9, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+@@@ PID: 3147: E: Signaling Mutex.
+@@@ PID: 3138: E: Passed MUTEX!.
+	 Shared Variables status at PID 3138: XingCount = 1, XedCount = 10, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+@@@ PID: 3138: E: Signaling Mutex.
+@@@ PID: 3137: E: Crossed the bridge -- Waiting for MUTEX!.
+@@@ PID: 3137: E: Passed MUTEX!.
+@@@ PID: 3137: E: Setting XingDirection to None -- no one is waiting.
+	 Shared Variables status at PID 3137: XingCount = 0, XedCount = 0, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 0
+@@@ PID: 3137: E: Signaling Mutex.
+*** PID: 3136: I am an East Bound Car!
+--- PID: 3136: E: Waiting on Mutex.
+--- PID: 3136: E: Passed Mutex.
+--- PID: 3136: E: It's my turn -- Going to Cross.
+	 Shared Variables status at PID 3136: XingCount = 1, XedCount = 0, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 1
+--- PID: 3136: E: Signaling MUTEX.
+@@@ PID: 3136: E: I am crossing the bridge!.
+@@@ PID: 3136: E: Crossed the bridge -- Waiting for MUTEX!.
+@@@ PID: 3136: E: Passed MUTEX!.
+@@@ PID: 3136: E: Setting XingDirection to None -- no one is waiting.
+	 Shared Variables status at PID 3136: XingCount = 0, XedCount = 0, EastBndWaitCount = 0, WestBndWaitCount = 0, Dir = 0
+@@@ PID: 3136: E: Signaling Mutex.
+That's all folks!

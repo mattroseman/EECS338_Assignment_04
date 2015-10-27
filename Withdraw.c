@@ -55,21 +55,38 @@ void main (int argc, char * argv[])
     list = *(LinkedList *)(memaddr + 2*sizeof(unsigned int));
 
     Wait(semid, MUTEX);
+    // if there are no other withdraw processes waiting and there is enough to withdraw
     if (wcount == 0 && balance > withdraw)
     {
         balance = balance - withdraw;
         Signal(semid, MUTEX);
     }
+    // either there are other withdrawl requests waiting or there isn't enough balance
     else
     {
+        // add a withdraw process to the wait list
         wcount = wcount + 1;
         AddEndOfList(&list, withdraw);
+        // this process is waiting so more withdraw processes can start up
         Signal(semid, MUTEX);
+        // wait for a deposit process to run and deposit enough for the first process waiting
         Wait(semid, WLIST);
         balance = balance - FirstRequestAmount(&list);
         DeleteFirstRequest(&list);
+        // this withdraw is done waiting
         wcount = wcount - 1;
-        Signal(semid, MUTEX);
+        // if there are still withdraw processes waiting and there is enough to withdraw
+        if (wcount > 1 && FirstRequestAmount(&list) < balance)
+        {
+            // signal for the waiting withdraw process to go
+            Signal(semid, WLIST);
+        }
+        // either there aren't any withdraw processes waiting or there isn't enough to withdraw
+        else
+        {
+            // let another deposit or withdraw process run (although a withdraw process is just going to go straight to the queue
+            Signal(semid, MUTEX);
+        }
     }
 
 Cleanup:

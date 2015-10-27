@@ -1,0 +1,47 @@
+George Hodulik
+gmh73
+
+Homework #4
+3/20/2015
+
+This program implements Professor Tekin's solutions to Homework #2
+in C, using System V Semaphores and Shared Memory access.
+
+The source code is in the file cars.c.  To complile, just call make,
+and the executable file will be called cars.
+
+The syntax of the program is as follows:
+	./cars eeeewwweeeeeeeewwe
+
+This will run the program and then create east bound cars for each e
+and west bound cars for each w.  I try to create the processes in that order with 
+some lag between each creation, but that does not always work.  For example,
+running ./cars ew , there's really no telling if the east bound car will be the
+first to wait on the mutex semaphore or not - this stuff is more dependant on the 
+CPU scheduler, or other kernel things I do not have control over.
+
+I found that there were some sections I had to add to the algorithm in order to 
+get the processes functioning as they should.  I think the algorithm is at fault,
+but perhaps I implemented it wrong somehow.  
+These sections I added, I commented like so (note the 3 asterisks):
+// *** comment explaining added code
+
+I have a debug print function that will print all the shared variables if
+PRINT_DEBUG_INFO > 0.  I find this printout very helpful in understanding what's
+going on, but it is not fully necessary, so if you do not want to see it, set
+PRINT_DEBUG_INFO to 0.
+
+I have two output files, outputLong has the input eeeeeewwwweeewwwee while outputEast only
+has east bound cars.  Please note that producing output by piping it to a file like so:
+./cars eewewewewewweee > output
+will not produce a good output.  I am not sure if this is because I do not flush my printouts, 
+or if it is something with having concurrent process - I don't know, but if you want valid
+output, let the program output to terminal.  I obtained my output files from copying and pasting
+from the terminal.
+
+The overall skeleton of the functions making the car process, ie. processing input
+and forking, was heavily adapted from the solution to Homework 5 of 2013.  The wrapper
+functions for calling wait and signal, as well as getting the semaphores and shared data
+were from that homework was used here.
+I commented these areas of the code fairly heavily to demonstrate
+my understanding of the material.
