@@ -26,6 +26,7 @@
 void UpdateSHM();
 void GetSHM();
 
+unsigned int sleepScale;
 
 // a string that precedes every output string
 char * signature;
@@ -50,6 +51,8 @@ unsigned int oldbalance;
 // takes one argument, the amount to be withdrawn
 void main (int argc, char * argv[])
 {
+    sleepScale = 0;
+
     signature = malloc(100);
     if (sprintf(signature, "%s%d%s", "--- PID: ", getpid(), " (withdraw): ") < 0)
     {
@@ -71,7 +74,7 @@ void main (int argc, char * argv[])
     }
 
     printf("%sWithdraw Process with amount %u has started\n", signature, withdraw);
-    sleep(2);
+    sleep(2 * sleepScale);
 
     semid = GetGroup(SEMAPHORE_KEY);
 
@@ -88,7 +91,7 @@ void main (int argc, char * argv[])
     printf("\n%sEntering Critical Section\n", cssignature);
     GetSHM();
 
-    sleep(4);
+    sleep(4 * sleepScale);
 
     // if there are no other withdraw processes waiting and there is enough to withdraw
     if (wcount == 0 && balance > withdraw)
@@ -97,13 +100,13 @@ void main (int argc, char * argv[])
 
         balance = balance - withdraw;
         printf("%sWithdrawing %u\n", cssignature, withdraw);
-        sleep(2);
+        sleep(2 * sleepScale);
         printf("%s%u - %u = %u\n", cssignature, oldbalance, withdraw, balance);
-        sleep(2);
+        sleep(2 * sleepScale);
         printf("%sNew Balance = %u\n", cssignature, balance);
-        sleep(2);
+        sleep(2 * sleepScale);
 
-        sleep(4);
+        sleep(4 * sleepScale);
 
         printf("%sExiting Critical Section\n\n", cssignature);
         UpdateSHM();
@@ -124,31 +127,31 @@ void main (int argc, char * argv[])
         // wait for a deposit process to run and deposit enough for the first process waiting
         printf("%sNot enough in balance (%u) to withdraw (%u)\n", cssignature, balance, withdraw);
 
-        sleep(4);
+        sleep(4 * sleepScale);
 
         printf("\n%sExiting Critical Section\n", cssignature);
         UpdateSHM();
-        sleep(2);
+        sleep(2 * sleepScale);
         Wait(semid, WLIST);
         printf("\n%sEntering Critical Section\n", cssignature);
         GetSHM();
 
-        sleep(4);
+        sleep(4 * sleepScale);
 
         oldbalance = balance;
 
         balance = balance - FirstRequestAmount(list, &size);
         printf("%sWithdrawing %u\n", cssignature, FirstRequestAmount(list, &size));
-        sleep(2);
+        sleep(2 * sleepScale);
         printf("%s%u - %u = %u\n", cssignature, oldbalance, withdraw, balance);
-        sleep(2);
+        sleep(2 * sleepScale);
         printf("%sNew Balance = %u\n", cssignature, balance);
-        sleep(2);
+        sleep(2 * sleepScale);
         DeleteFirstRequest(list, &size);
         // this withdraw is done waiting
         wcount = wcount - 1;
 
-        sleep(4);
+        sleep(4 * sleepScale);
 
         // if there are still withdraw processes waiting and there is enough to withdraw
         if (wcount > 1 && FirstRequestAmount(list, &size) < balance)
@@ -156,7 +159,7 @@ void main (int argc, char * argv[])
             // signal for the waiting withdraw process to go
             printf("%sExiting Critical Section\n\n", cssignature);
             UpdateSHM();
-            sleep(2);
+            sleep(2 * sleepScale);
             Signal(semid, WLIST);
         }
         // either there aren't any withdraw processes waiting or there isn't enough to withdraw
@@ -165,7 +168,7 @@ void main (int argc, char * argv[])
             // let another deposit or withdraw process run (although a withdraw process is just going to go straight to the queue
             printf("%sExiting Critical Section\n\n", cssignature);
             UpdateSHM();
-            sleep(2);
+            sleep(2 * sleepScale);
             Signal(semid, MUTEX);
         }
     }
@@ -173,7 +176,7 @@ void main (int argc, char * argv[])
 Cleanup:
 
     printf("%sWithdraw is complete\n", signature);
-    sleep(2);
+    sleep(2 * sleepScale);
 
     free(signature);
     free(cssignature);

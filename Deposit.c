@@ -26,6 +26,7 @@
 void UpdateSHM();
 void GetSHM();
 
+unsigned int sleepScale;
 
 // a string that precedes every output string
 char * signature;
@@ -51,6 +52,8 @@ unsigned int oldbalance;
 
 void main(int argc, char * argv[])
 {
+    sleepScale = 0;
+
     signature = malloc(100);
     if (sprintf(signature, "%s%d%s", "--- PID: ", getpid(), " (deposit): ") < 0)
     {
@@ -72,7 +75,7 @@ void main(int argc, char * argv[])
     }
 
     printf("%sDeposit Process with amount %u has started\n", signature, deposit);
-    sleep(2);
+    sleep(2 * sleepScale);
 
     semid = GetGroup(SEMAPHORE_KEY);
 
@@ -81,7 +84,7 @@ void main(int argc, char * argv[])
     memaddr = (void *)AttachSegment(shmid);
 
     //printf("%sAttached to shared memory segment %d at address %p\n", signature, shmid, memaddr);
-    //sleep(2);
+    //sleep(2 * sleepScale);
 
     GetSHM();
 
@@ -89,20 +92,20 @@ void main(int argc, char * argv[])
     printf("\n%sEntering Critical Section\n", cssignature);
     GetSHM();
 
-    sleep(4);
+    sleep(4 * sleepScale);
 
     oldbalance = balance;
 
     balance = balance + deposit;
     printf("%sDepositing %u\n", cssignature, deposit);
-    sleep(2);
+    sleep(2 * sleepScale);
     printf("%s%u + %u = %u", cssignature, oldbalance, deposit, balance);
-    sleep(2);
+    sleep(2 * sleepScale);
     printf("%sNew Balance = %u\n", cssignature, balance);
-    sleep(2);
+    sleep(2 * sleepScale);
 
 
-    sleep(4);
+    sleep(4 * sleepScale);
 
     // if there aren't any withdraw processes waiting
     if (wcount == 0)
@@ -110,7 +113,7 @@ void main(int argc, char * argv[])
         // signal the next withdraw or deposit process
         printf("%sExiting Critical Section\n\n", cssignature);
         UpdateSHM();
-        sleep(2);
+        sleep(2 * sleepScale);
         Signal(semid, MUTEX);
     }
     else 
@@ -121,7 +124,7 @@ void main(int argc, char * argv[])
             // keep them waiting for a bigger deposit
             printf("%sExiting Critical Section\n\n", cssignature);
             UpdateSHM();
-            sleep(2);
+            sleep(2 * sleepScale);
             Signal(semid, MUTEX);
         }
         // if there are some waiting and there is enough to withdraw
@@ -130,7 +133,7 @@ void main(int argc, char * argv[])
             // signal the waiting withdraw process to proceed and withdraw
             printf("%sExiting Critical Section\n\n", cssignature);
             UpdateSHM();
-            sleep(2);
+            sleep(2 * sleepScale);
             Signal(semid, WLIST);
         }
     }
@@ -138,7 +141,7 @@ void main(int argc, char * argv[])
 Cleanup:
 
     printf("%sDeposit is complete\n", signature);
-    sleep(2);
+    sleep(2 * sleepScale);
 
     free(signature);
     free(cssignature);

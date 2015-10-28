@@ -3,20 +3,27 @@
 
 #include "Array.h"
 
-/* 
-TODO
-Have this method take in a pointer to an array and 
-copy over the items so that there is enought allocated memory*/
 void AddEndOfList(unsigned int *A[], unsigned int *size, unsigned int val)
 {
-    printf("Check 1\n");
+    printf("Check 1 %u\n", *size + 1);
+
+    printf("The pointer passed into AddEndOfList is %p\n", *A);
+
+    //FIXME for some reason the program is getting stuck here
+    // I know that *A is the same pointer that was returned from malloc
+    // I know that *size + 1 is the correct new size
+    // realloc isn't failing because perror isn't showing up
+    // process is getting hung somewhere
 
     // makes an array of one larger size and copies elements from *A over to it
-    if ((*A = realloc(*A, *size + 1)) < 0)
+    unsigned int *L;
+    if ((L = (unsigned int *)realloc(*A, *size + 1)) == NULL)
     {
         perror("realloc failed\n");
         exit(EXIT_FAILURE);
     }
+
+    A = &L;
 
     printf("Check 2\n");
 
