@@ -22,6 +22,6 @@ void AddEndOfList(LinkedList *, unsigned int);
 
 void DeleteFirstRequest(LinkedList *);
 
-int FirstRequestAmount(LinkedList *);
+unsigned int FirstRequestAmount(LinkedList *);
 
 #endif

@@ -22,19 +22,19 @@ LinkedList * NewLinkedList()
 
     // this pointer should equal the list->tail pointer which
     // should equal the list->head->nextNode pointer
-    printf("%p\n", tail);
+    printf("pointer to the tail allocated by malloc: %p\n", tail);
 
     list->head = head;
     list->tail = tail;
 
-    printf("%p\n", list->tail);
+    printf("pointer to the tail inside the LinkedList struct: %p\n", list->tail);
 
     list->head->nextNode = list->tail;
     list->tail->prevNode = list->head;
 
-    printf("%p\n", list->head->nextNode);
+    printf("pointer from head to the nextNode: %p\n", list->head->nextNode);
 
-    printf("%p\n", list);
+    printf("pointer to the list allocated by malloc: %p\n", list);
 
     // this should return the allocated spot in memory that linked list was initialized
     return list;
@@ -48,10 +48,23 @@ void DestroyLinkedList(LinkedList *A)
 /* Add the element val to the end of the linked list A */
 void AddEndOfList(LinkedList *A, unsigned int val)
 {
-    printf("%p\n", A);
+    printf("pointer to the list allocated by malloc: %p\n", A);
 
-    printf("%p\n", A->tail);
-    printf("%p\n", A->head->nextNode);
+    /* 
+    FIXME
+    When adding the first element the process seems to hang up at this point
+    unable to access A->tail
+    which should be the pointer to the tail element
+    which was allocated and printed in the init method
+    */
+    printf("pointer to the tail inside of the list: %p\n", A->tail);
+    /* 
+    FIXME
+    The pointer to head also can't be reached
+    the items inside the linked list must not have been
+    allocated?
+    */
+    printf("pointer from the head to the nextNode: %p\n", A->head->nextNode);
 
     // allocates memory for a new node and initializes that node
     // includes allocating/initializing pointers to a nextNode and prevNode
@@ -101,7 +114,7 @@ void DeleteFirstRequest(LinkedList *A)
 
 /* Get the value of the first node in linked list A */
 /* Returns -1 if the list is empty */
-int FirstRequestAmount(LinkedList *A)
+unsigned int FirstRequestAmount(LinkedList *A)
 {
     if (A->head->nextNode != A->tail)
     {

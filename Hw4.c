@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <string.h>
+#include <time.h>
 
 #include "Semaphore.h"
 #include "SharedMemory.h"
@@ -13,15 +14,18 @@
 
 #define SEMAPHORE_KEY 64043
 // The number of semaphores used
-#define NUM_SEM 2
+#define NUM_SEM 3
 // Binary Semaphore
 #define MUTEX 0
 // Nonbinary Semaphores
-#define WLIST 1
+#define FIRST 1
+#define SECOND 2
 
 void CatchError(int, char *);
 void StartWithdraw(unsigned int amount);
 void StartDeposit(unsigned int amount);
+
+unsigned int sleepScale;
 
 int pid;
 // What every message by this process starts with
@@ -36,14 +40,16 @@ int shmid;
 void * memaddr;
 
 // initial starting values of the semaphores
-unsigned short initValues[] = {0,0};
+unsigned short initValues[] = {0,0,0};
 
 char * pargs[3];
 
 // Assignment variables
 unsigned int wcount;
 unsigned int balance;
-LinkedList *list;
+unsigned int nextWithdraw;
+
+unsigned int seed;
 
 /*
  * TODO 
@@ -52,58 +58,65 @@ LinkedList *list;
  */
 int main() 
 { 
+    sleepScale = 1;
+
     signature = malloc(100);
-    if (sprintf(signature, "%s%d%s", "--- PID: ", getpid(), " (main): ") < 0)
-    {
-        perror("sprintf failed\n");
-        exit(EXIT_FAILURE);
-    }
+    CatchError( sprintf(signature, "%s%d%s", "--- PID: ", getpid(), " (main): "), "sprintf failed\n");
+
     printf("%sStarting Main process\n", signature);
-    sleep(2);
+    sleep(2 * sleepScale);
 
     // IPC_CREAT signals to make new group if key doesn't already exist
     semid = CreateGroup(SEMAPHORE_KEY, NUM_SEM, initValues);
     printf("%sNew Semaphore Group %d has been created\n", signature, semid);
-    sleep(2);
+    sleep(2 * sleepScale);
     // mutex starts as 1
     Signal(semid, MUTEX);
+    // first starts as 1
+    Signal(semid, FIRST);
 
-    // Initialize
+Initialize:
+
     wcount = 0;
     printf("%swcount = %u\n", signature, wcount);
-    sleep(2);
+    sleep(2 * sleepScale);
     balance = 500;
     printf("%sbalance = %u\n", signature, balance);
-    sleep(2);
-    list = NewLinkedList();
-    printf("%p\n", list);
-    printf("%sThe linked list has been initialized\n", signature);
-    sleep(2);
+    sleep(2 * sleepScale);
+    nextWithdraw = 0;
 
     // creates a new shared memory segment
-    // The memory follows format wcount, then balance, then list pointer
-    shmid = CreateSegment(SEMAPHORE_KEY, (2*sizeof(unsigned int) + sizeof(list)));
+    // The memory follows format wcount, then balance
+    shmid = CreateSegment(SEMAPHORE_KEY, (3*sizeof(unsigned int)));
     printf("%sNew Shared Memory Segment %d has been created\n", signature, shmid);
-    sleep(2);
+    sleep(2 * sleepScale);
 
     // Attach the memory segment to this process and get the address
     memaddr = AttachSegment(shmid);
     printf("%sThe memory segment %d has been attached to this process at address %p\n", signature, shmid, memaddr);
-    sleep(2);
+    sleep(2 * sleepScale);
 
     // Put data into shared memory
     *(unsigned int *)memaddr = wcount;
     *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
-    // the third data element is a pointer to a linked list
-    *(LinkedList **)(memaddr + 2*sizeof(unsigned int)) = list;
+    *(unsigned int *)(memaddr + 2 * sizeof(unsigned int)) = nextWithdraw;
 
     printf("%sVariables have been put into shared memory\n", signature);
 
+    CatchError((seed = time(NULL)), "time failed\n");
+    srand(seed);
+
+StartLoop:
+
     // An infinite loop that randomly deposits and withdraws at most every 10 seconds and least 1 second
+    /* 
+    TODO
+    Have a listener for any key strokes that exits this and kills all running processes
+    */
     while(1==1)
     {
-        // come up with a random time between 20 and 30 seconds
-        unsigned int time = (rand()%10) + 20;
+        // come up with a random time between 5 and 15 seconds
+        unsigned int time = (rand()%10) + 5;
         CatchError(sleep(time), "sleep failed\n");
         // come up with a random dollar amount between 1 and 300
         unsigned int amount = (rand()%300) + 1;
@@ -113,14 +126,14 @@ int main()
         if (x == (unsigned int)0)
         {
             //printf("%sStarting Deposit Process with amount %u\n", signature, amount);
-            sleep(2);
+            sleep(2 * sleepScale);
             StartDeposit(amount);
         }
         // make a withdraw
         else
         {
             //printf("%sStarting Withdraw Process with amount %u\n", signature, amount);
-            sleep(2);
+            sleep(2 * sleepScale);
             StartWithdraw(amount);
         }
     }
@@ -135,8 +148,6 @@ int main()
 Cleanup:
 
     free(signature);
-
-    DestroyLinkedList(list);
 
     DetachSegment(memaddr);
 

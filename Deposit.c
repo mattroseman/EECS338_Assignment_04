@@ -20,12 +20,14 @@
 // Binary Semaphore
 #define MUTEX 0
 // Nonbinary Semaphores
-#define WLIST 1
+#define FIRST 1
+#define SECOND 2
 
 
 void UpdateSHM();
 void GetSHM();
 
+unsigned int sleepScale;
 
 // a string that precedes every output string
 char * signature;
@@ -44,12 +46,14 @@ unsigned int deposit;
 // found from storage
 unsigned int wcount;
 unsigned int balance;
-LinkedList *list;
+unsigned int nextWithdraw;
 
 unsigned int oldbalance;
 
 void main(int argc, char * argv[])
 {
+    sleepScale = 1;
+
     signature = malloc(100);
     if (sprintf(signature, "%s%d%s", "--- PID: ", getpid(), " (deposit): ") < 0)
     {
@@ -58,7 +62,7 @@ void main(int argc, char * argv[])
     }
 
     cssignature = malloc(100);
-    if (sprintf(cssignature, "%s%d%s", "*** (deposit) PID: ", getpid(), " (deposit): ") < 0)
+    if (sprintf(cssignature, "%s%d%s", "*** PID: ", getpid(), " (deposit): ") < 0)
     {
         perror("sprintf failed\n");
         exit(EXIT_FAILURE);
@@ -71,7 +75,7 @@ void main(int argc, char * argv[])
     }
 
     printf("%sDeposit Process with amount %u has started\n", signature, deposit);
-    sleep(2);
+    sleep(2 * sleepScale);
 
     semid = GetGroup(SEMAPHORE_KEY);
 
@@ -80,7 +84,7 @@ void main(int argc, char * argv[])
     memaddr = (void *)AttachSegment(shmid);
 
     //printf("%sAttached to shared memory segment %d at address %p\n", signature, shmid, memaddr);
-    //sleep(2);
+    //sleep(2 * sleepScale);
 
     GetSHM();
 
@@ -88,20 +92,20 @@ void main(int argc, char * argv[])
     printf("\n%sEntering Critical Section\n", cssignature);
     GetSHM();
 
-    sleep(4);
+    sleep(4 * sleepScale);
 
     oldbalance = balance;
 
     balance = balance + deposit;
     printf("%sDepositing %u\n", cssignature, deposit);
-    sleep(2);
-    printf("%s%u + %u = %u", cssignature, oldbalance, deposit, balance);
-    sleep(2);
+    sleep(2 * sleepScale);
+    printf("%s%u + %u = %u\n", cssignature, oldbalance, deposit, balance);
+    sleep(2 * sleepScale);
     printf("%sNew Balance = %u\n", cssignature, balance);
-    sleep(2);
+    sleep(2 * sleepScale);
 
 
-    sleep(4);
+    sleep(4 * sleepScale);
 
     // if there aren't any withdraw processes waiting
     if (wcount == 0)
@@ -109,18 +113,18 @@ void main(int argc, char * argv[])
         // signal the next withdraw or deposit process
         printf("%sExiting Critical Section\n\n", cssignature);
         UpdateSHM();
-        sleep(2);
+        sleep(2 * sleepScale);
         Signal(semid, MUTEX);
     }
     else 
     {
         // if there are some waiting and there is not enough to withdraw now
-        if (FirstRequestAmount(list) > balance)
+        if (nextWithdraw > balance)
         {
             // keep them waiting for a bigger deposit
             printf("%sExiting Critical Section\n\n", cssignature);
             UpdateSHM();
-            sleep(2);
+            sleep(2 * sleepScale);
             Signal(semid, MUTEX);
         }
         // if there are some waiting and there is enough to withdraw
@@ -129,15 +133,15 @@ void main(int argc, char * argv[])
             // signal the waiting withdraw process to proceed and withdraw
             printf("%sExiting Critical Section\n\n", cssignature);
             UpdateSHM();
-            sleep(2);
-            Signal(semid, WLIST);
+            sleep(2 * sleepScale);
+            Signal(semid, SECOND);
         }
     }
 
 Cleanup:
 
     printf("%sDeposit is complete\n", signature);
-    sleep(2);
+    sleep(2 * sleepScale);
 
     free(signature);
     free(cssignature);
@@ -151,12 +155,12 @@ void UpdateSHM()
 {
     *(unsigned int *)memaddr = wcount;
     *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
-    *(LinkedList **)(memaddr + 2*sizeof(unsigned int)) = list;
+    *(unsigned int *)(memaddr + 2*sizeof(unsigned int)) = nextWithdraw;
 }
 
 void GetSHM()
 {
     wcount = *(unsigned int *)memaddr;
     balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
-    list = *(LinkedList **)(memaddr + 2*sizeof(unsigned int));
+    nextWithdraw = *(unsigned int *)(memaddr + 2*sizeof(unsigned int));
 }
