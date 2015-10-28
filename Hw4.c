@@ -76,6 +76,7 @@ int main()
     printf("%sbalance = %u\n", signature, balance);
     sleep(2);
     list = NewLinkedList();
+    printf("%p\n", list);
     printf("%sThe linked list has been initialized\n", signature);
     sleep(2);
 
@@ -101,8 +102,8 @@ int main()
     // An infinite loop that randomly deposits and withdraws at most every 10 seconds and least 1 second
     while(1==1)
     {
-        // come up with a random time between 1 and 10 seconds
-        unsigned int time = (rand()%10) + 1;
+        // come up with a random time between 20 and 30 seconds
+        unsigned int time = (rand()%10) + 20;
         CatchError(sleep(time), "sleep failed\n");
         // come up with a random dollar amount between 1 and 300
         unsigned int amount = (rand()%300) + 1;

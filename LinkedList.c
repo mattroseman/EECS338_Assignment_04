@@ -20,38 +20,23 @@ LinkedList * NewLinkedList()
     // initializes a tail node at that memory
     Node *tail = malloc(sizeof(*tail));
 
+    // this pointer should equal the list->tail pointer which
+    // should equal the list->head->nextNode pointer
+    printf("%p\n", tail);
+
     list->head = head;
     list->tail = tail;
 
-    // This point reached
-    printf("checkpoint 1 reached\n");
+    printf("%p\n", list->tail);
 
-    /* 
-    FIXME
-    when I allocated memory for the list it should
-    initialize the head and tail so there can be pointers to them
-    */
-    // this should dereference list and get pointer to head
-    // dereference head and get pointer to nextNode
-    // make the pointer to nextNode
-    // dereference list and get pointer to tail
-    // make head's pointer to nextNode equal the pointer to tail
     list->head->nextNode = list->tail;
     list->tail->prevNode = list->head;
 
-    printf("check2\n");
+    printf("%p\n", list->head->nextNode);
 
-    // There will be a NULL node before the first node is added
-    //list->head->nextNode = NULL;
-    //list->tail->prevNode = NULL;
+    printf("%p\n", list);
 
-    printf("checkpoint 2 reached\n");
-
-    //LinkedList *returnList = (LinkedList *)malloc(sizeof(*list));
-    //printf("checkpoint 3 reached\n");
-    //*returnList = *list;
-    printf("checkpoint 4 reached\n");;
-
+    // this should return the allocated spot in memory that linked list was initialized
     return list;
 }
 
@@ -63,12 +48,43 @@ void DestroyLinkedList(LinkedList *A)
 /* Add the element val to the end of the linked list A */
 void AddEndOfList(LinkedList *A, unsigned int val)
 {
-    Node *newNode = (Node *)malloc(sizeof(Node));
+    printf("%p\n", A);
+
+    printf("%p\n", A->tail);
+    printf("%p\n", A->head->nextNode);
+
+    // allocates memory for a new node and initializes that node
+    // includes allocating/initializing pointers to a nextNode and prevNode
+    // includes allocating/initializing an unsigned int
+    Node *newNode = malloc(sizeof(Node));
     newNode->value = val;
+
+    // this is printing fine meaning that memory was allocated fine and unsigned int val was initialized
+    printf("%u\n", newNode->value);
+
+    printf("Check1\n");
+
+    // it can't print this even though tail should have a value
+    printf("%p\n", A->tail);
+    printf("%u\n", A->tail->value);
+
+    // the pointer nextNode was initialized but currently has no value
+    // A->tail should be initialized
     newNode->nextNode = A->tail;
+
+    printf("Check2\n");
+
     newNode->prevNode = A->tail->prevNode;
+
+    printf("Check3\n");
+
     A->tail->prevNode = newNode;
+
+    printf("Check4\n");
+
     newNode->prevNode->nextNode = newNode;
+
+    printf("Check end\n");
 }
 
 /* Remove the first element from linked list A */

@@ -198,5 +198,10 @@ void GetSHM()
 {
     wcount = *(unsigned int *)memaddr;
     balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
+    // the spot in memory equals a pointer to a linked list
+    // take the pointer to that pointer
+    // cast it as LinkedList **
+    // dereference one level so it equals the pointer to the linked list allocated in memory
     list = *(LinkedList **)(memaddr + 2*sizeof(unsigned int));
+    printf("%p\n", list);
 }
