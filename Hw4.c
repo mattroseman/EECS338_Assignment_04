@@ -10,7 +10,6 @@
 
 #include "Semaphore.h"
 #include "SharedMemory.h"
-#include "LinkedList.h"
 
 #define SEMAPHORE_KEY 64043
 // The number of semaphores used
@@ -28,15 +27,11 @@ void StartDeposit(unsigned int amount);
 unsigned int sleepScale;
 
 int pid;
-// What every message by this process starts with
 char * signature;
 
-// The identifier for the semaphore group that will be made
 int semid;
-// The identifier for the shared memory segment that will be made
 int shmid;
 
-// The address in memory of the shared memory 
 void * memaddr;
 
 // initial starting values of the semaphores
@@ -47,6 +42,7 @@ char * pargs[3];
 // Assignment variables
 unsigned int wcount;
 unsigned int balance;
+// Amount of the next waiting withdraw process
 unsigned int nextWithdraw;
 
 unsigned int seed;
@@ -66,7 +62,6 @@ int main()
     printf("%sStarting Main process\n", signature);
     sleep(2 * sleepScale);
 
-    // IPC_CREAT signals to make new group if key doesn't already exist
     semid = CreateGroup(SEMAPHORE_KEY, NUM_SEM, initValues);
     printf("%sNew Semaphore Group %d has been created\n", signature, semid);
     sleep(2 * sleepScale);
@@ -74,16 +69,21 @@ int main()
     Signal(semid, MUTEX);
     // first starts as 1
     Signal(semid, FIRST);
+    // second starts as 0
 
 Initialize:
 
     wcount = 0;
     printf("%swcount = %u\n", signature, wcount);
     sleep(2 * sleepScale);
+
     balance = 500;
     printf("%sbalance = %u\n", signature, balance);
     sleep(2 * sleepScale);
+
     nextWithdraw = 0;
+
+SharedMemory:
 
     // creates a new shared memory segment
     // The memory follows format wcount, then balance
@@ -102,40 +102,52 @@ Initialize:
     *(unsigned int *)(memaddr + 2 * sizeof(unsigned int)) = nextWithdraw;
 
     printf("%sVariables have been put into shared memory\n", signature);
+    sleep(2 * sleepScale);
+
+Semaphores:
+
+    semid = CreateGroup(SEMAPHORE_KEY, NUM_SEM, initValues);
+    printf("%sNew Semaphore Group %d has been created\n", signature, semid);
+    // mutex starts as 1
+    Signal(semid, MUTEX);
+    // first starts as 1
+    Signal(semid, FIRST);
+    // second starts as 0
+
+MainLoop:
 
     CatchError((seed = time(NULL)), "time failed\n");
     srand(seed);
 
-StartLoop:
-
-    // An infinite loop that randomly deposits and withdraws at most every 10 seconds and least 1 second
     /* 
     TODO
     Have a listener for any key strokes that exits this and kills all running processes
     */
-    while(1==1)
+    while(1)
     {
-        // come up with a random time between 5 and 15 seconds
-        unsigned int time = (rand()%10) + 5;
-        CatchError(sleep(time), "sleep failed\n");
-        // come up with a random dollar amount between 1 and 300
+        // Amount to be withdrawn/deposited
         unsigned int amount = (rand()%300) + 1;
-        // randomly decide between deposit or withdraw
+
+        // Which process should be run: deposit = 0/withdraw = 1
         unsigned int x = (rand()%2);
-        // make a deposit
-        if (x == (unsigned int)0)
+
+        // Make a Deposit
+        if (x == 0)
         {
-            //printf("%sStarting Deposit Process with amount %u\n", signature, amount);
             sleep(2 * sleepScale);
             StartDeposit(amount);
         }
-        // make a withdraw
-        else
+
+        // Make a Withdraw
+        else // x == 1
         {
-            //printf("%sStarting Withdraw Process with amount %u\n", signature, amount);
             sleep(2 * sleepScale);
             StartWithdraw(amount);
         }
+
+        // Time between process creations
+        unsigned int time = (rand()%10) + 5;
+        CatchError(sleep(time), "sleep failed\n");
     }
 
     /* 
@@ -176,10 +188,8 @@ void StartWithdraw(unsigned int withdrawAmount)
     pargs[2] = NULL;
     
     CatchError((pid = fork()), "withdraw fork failed\n");
-    // If the process is the child process
     if (pid == 0)
     {
-        // the child process is now running the withdraw program 
         CatchError(execvp("./withdraw", pargs), "withdraw execvp failed\n");
     }
     free(pargs[1]);
