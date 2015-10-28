@@ -6,8 +6,24 @@
 /* Initialize a new empty linked list */
 LinkedList * NewLinkedList()
 {
-    LinkedList *list = malloc(sizeof(LinkedList));
+    // Allocating memory for list should
+    // initialize a list by
+    // allocate memory for the pointer to head
+    // allocate memory for the pointer to tail
+    // need to allocate the memory for actual head and tail nodes
+    // then make the pointers in list point to those allocated spots
+    LinkedList *list = malloc(sizeof(*list));
+    // allocates memory for the head node
+    // initializes a head node at that memory
+    Node *head = malloc(sizeof(*head));
+    // allocates memory for the tail node
+    // initializes a tail node at that memory
+    Node *tail = malloc(sizeof(*tail));
 
+    list->head = head;
+    list->tail = tail;
+
+    // This point reached
     printf("checkpoint 1 reached\n");
 
     /* 
@@ -15,8 +31,19 @@ LinkedList * NewLinkedList()
     when I allocated memory for the list it should
     initialize the head and tail so there can be pointers to them
     */
+    // this should dereference list and get pointer to head
+    // dereference head and get pointer to nextNode
+    // make the pointer to nextNode
+    // dereference list and get pointer to tail
+    // make head's pointer to nextNode equal the pointer to tail
     list->head->nextNode = list->tail;
     list->tail->prevNode = list->head;
+
+    printf("check2\n");
+
+    // There will be a NULL node before the first node is added
+    //list->head->nextNode = NULL;
+    //list->tail->prevNode = NULL;
 
     printf("checkpoint 2 reached\n");
 
