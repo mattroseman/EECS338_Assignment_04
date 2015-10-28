@@ -6,22 +6,26 @@
 /* Initialize a new empty linked list */
 LinkedList * NewLinkedList()
 {
-    LinkedList *list;
+    LinkedList *list = malloc(sizeof(LinkedList));
 
     printf("checkpoint 1 reached\n");
 
+    /* 
+    FIXME
+    when I allocated memory for the list it should
+    initialize the head and tail so there can be pointers to them
+    */
     list->head->nextNode = list->tail;
     list->tail->prevNode = list->head;
 
     printf("checkpoint 2 reached\n");
 
-    // do it in this order so that sizeof(list) is correct
-    LinkedList *returnList = (LinkedList *)malloc(sizeof(*list));
-    printf("checkpoint 3 reached\n");
-    *returnList = *list;
+    //LinkedList *returnList = (LinkedList *)malloc(sizeof(*list));
+    //printf("checkpoint 3 reached\n");
+    //*returnList = *list;
     printf("checkpoint 4 reached\n");;
 
-    return returnList;
+    return list;
 }
 
 void DestroyLinkedList(LinkedList *A)
