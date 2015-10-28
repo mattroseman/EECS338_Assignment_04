@@ -5,7 +5,7 @@ program_NAME = sap
 withdraw_NAME = withdraw
 deposit_NAME = deposit
 
-helper_C_SRCS = Semaphore.c SharedMemory.c LinkedList.c
+helper_C_SRCS = Semaphore.c SharedMemory.c Array.c
 main_program_C_SRCS = Hw4.c
 withdraw_C_SRCS = Withdraw.c
 deposit_C_SRCS = Deposit.c

@@ -9,7 +9,7 @@
 
 #include "Semaphore.h"
 #include "SharedMemory.h"
-#include "LinkedList.h"
+#include "Array.h"
 
 #define SEMAPHORE_KEY 64043
 // The number of semaphores used
@@ -44,7 +44,8 @@ unsigned int deposit;
 // found from storage
 unsigned int wcount;
 unsigned int balance;
-LinkedList *list;
+unsigned int *list;
+unsigned int size;
 
 unsigned int oldbalance;
 
@@ -115,7 +116,7 @@ void main(int argc, char * argv[])
     else 
     {
         // if there are some waiting and there is not enough to withdraw now
-        if (FirstRequestAmount(list) > balance)
+        if (FirstRequestAmount(list, &size) > balance)
         {
             // keep them waiting for a bigger deposit
             printf("%sExiting Critical Section\n\n", cssignature);
@@ -151,12 +152,14 @@ void UpdateSHM()
 {
     *(unsigned int *)memaddr = wcount;
     *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
-    *(LinkedList **)(memaddr + 2*sizeof(unsigned int)) = list;
+    *(unsigned int **)(memaddr + 2*sizeof(unsigned int)) = list;
+    *(unsigned int *)(memaddr + 2*sizeof(unsigned int) + sizeof(unsigned int *)) = size;
 }
 
 void GetSHM()
 {
     wcount = *(unsigned int *)memaddr;
     balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
-    list = *(LinkedList **)(memaddr + 2*sizeof(unsigned int));
+    list = *(unsigned int **)(memaddr + 2*sizeof(unsigned int));
+    size = *(unsigned int *)(memaddr + 2*sizeof(unsigned int) + sizeof(unsigned int *));
 }

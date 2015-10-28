@@ -9,7 +9,7 @@
 
 #include "Semaphore.h"
 #include "SharedMemory.h"
-#include "LinkedList.h"
+#include "Array.h"
 
 #define SEMAPHORE_KEY 64043
 // The number of semaphores used
@@ -31,6 +31,7 @@ char * signature;
 int semid;
 // The identifier for the shared memory segment that will be made
 int shmid;
+size_t shmSize;
 
 // The address in memory of the shared memory 
 void * memaddr;
@@ -43,7 +44,8 @@ char * pargs[3];
 // Assignment variables
 unsigned int wcount;
 unsigned int balance;
-LinkedList *list;
+// the length of the list
+unsigned int size;
 
 /*
  * TODO 
@@ -75,13 +77,17 @@ int main()
     balance = 500;
     printf("%sbalance = %u\n", signature, balance);
     sleep(2);
-    list = NewLinkedList();
-    printf("%sThe linked list has been initialized\n", signature);
+    // the size is currently 0
+    size = 0; 
+    unsigned int *list = (unsigned int *)calloc(size, sizeof(unsigned int));
+    printf("%sThe array has been initialized\n", signature);
     sleep(2);
 
     // creates a new shared memory segment
-    // The memory follows format wcount, then balance, then list pointer
-    shmid = CreateSegment(SEMAPHORE_KEY, (2*sizeof(unsigned int) + sizeof(list)));
+    // memory follows the format
+    // wcount, balance, pointer to list, size of list
+    shmSize = 3*sizeof(unsigned int) + sizeof(unsigned int *);
+    shmid = CreateSegment(SEMAPHORE_KEY, shmSize);
     printf("%sNew Shared Memory Segment %d has been created\n", signature, shmid);
     sleep(2);
 
@@ -94,15 +100,16 @@ int main()
     *(unsigned int *)memaddr = wcount;
     *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
     // the third data element is a pointer to a linked list
-    *(LinkedList **)(memaddr + 2*sizeof(unsigned int)) = list;
+    *(unsigned int **)(memaddr + 2*sizeof(unsigned int)) = list;
+    *(unsigned int *)(memaddr + 3*sizeof(unsigned int)) = size;
 
     printf("%sVariables have been put into shared memory\n", signature);
 
     // An infinite loop that randomly deposits and withdraws at most every 10 seconds and least 1 second
     while(1==1)
     {
-        // come up with a random time between 1 and 10 seconds
-        unsigned int time = (rand()%10) + 1;
+        // come up with a random time between 10 and 15 seconds
+        unsigned int time = (rand()%5) + 10;
         CatchError(sleep(time), "sleep failed\n");
         // come up with a random dollar amount between 1 and 300
         unsigned int amount = (rand()%300) + 1;
@@ -134,8 +141,6 @@ int main()
 Cleanup:
 
     free(signature);
-
-    DestroyLinkedList(list);
 
     DetachSegment(memaddr);
 

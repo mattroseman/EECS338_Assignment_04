@@ -9,14 +9,14 @@
 
 #include "Semaphore.h"
 #include "SharedMemory.h"
-#include "LinkedList.h"
+#include "Array.h"
 
 #define SEMAPHORE_KEY 64043
 // The number of semaphores used
 #define NUM_SEM 2
 // The size of shared memory
 // size of two insigned integers and a pointer to a linked list
-#define SHM_SIZE (2*sizeof(unsigned int) + sizeof(LinkedList *))
+#define SHM_SIZE (3*sizeof(unsigned int) + sizeof(unsigned int *))
 // Binary Semaphore
 #define MUTEX 0
 // Nonbinary Semaphores
@@ -42,7 +42,8 @@ unsigned int withdraw;
 
 unsigned int wcount;
 unsigned int balance;
-LinkedList *list;
+unsigned int size;
+unsigned int *list;
 
 unsigned int oldbalance;
 
@@ -114,7 +115,9 @@ void main (int argc, char * argv[])
     {
         // add a withdraw process to the wait list
         wcount = wcount + 1;
-        AddEndOfList(list, withdraw);
+        AddEndOfList(&list, &size, withdraw);
+
+        printf("%sEntering withdraw wait queue\n", cssignature);
 
         // this process is signaling so more withdraw/deposit processes can start up
         Signal(semid, MUTEX);
@@ -134,21 +137,21 @@ void main (int argc, char * argv[])
 
         oldbalance = balance;
 
-        balance = balance - FirstRequestAmount(list);
-        printf("%sWithdrawing %u\n", cssignature, FirstRequestAmount(list));
+        balance = balance - FirstRequestAmount(list, &size);
+        printf("%sWithdrawing %u\n", cssignature, FirstRequestAmount(list, &size));
         sleep(2);
         printf("%s%u - %u = %u\n", cssignature, oldbalance, withdraw, balance);
         sleep(2);
         printf("%sNew Balance = %u\n", cssignature, balance);
         sleep(2);
-        DeleteFirstRequest(list);
+        DeleteFirstRequest(list, &size);
         // this withdraw is done waiting
         wcount = wcount - 1;
 
         sleep(4);
 
         // if there are still withdraw processes waiting and there is enough to withdraw
-        if (wcount > 1 && FirstRequestAmount(list) < balance)
+        if (wcount > 1 && FirstRequestAmount(list, &size) < balance)
         {
             // signal for the waiting withdraw process to go
             printf("%sExiting Critical Section\n\n", cssignature);
@@ -190,7 +193,8 @@ void UpdateSHM()
     // the value at the end of the pointer to the pointer to a LinkedList 
     // (which is a pointer to a linked list)
     // equals the pointer to list
-    *(LinkedList **)(memaddr + 2*sizeof(unsigned int)) = list;
+    *(unsigned int **)(memaddr + 2*sizeof(unsigned int)) = list;
+    *(unsigned int *)(memaddr + 2*sizeof(unsigned int) + sizeof(unsigned int *));
 }
 
 // gets the new values from shared memory and assigns them to the appropriate variables
@@ -198,5 +202,6 @@ void GetSHM()
 {
     wcount = *(unsigned int *)memaddr;
     balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
-    list = *(LinkedList **)(memaddr + 2*sizeof(unsigned int));
+    list = *(unsigned int **)(memaddr + 2*sizeof(unsigned int));
+    size = *(unsigned int *)(memaddr + 2*sizeof(unsigned int) + sizeof(unsigned int *));
 }
