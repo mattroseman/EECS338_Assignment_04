@@ -114,7 +114,10 @@ SemaphoreAlgorithm:
         printf("\n%sExiting Critical Section\n", cssignature);
         sleep(2 * sleepScale);
 
-        Signal(semid, MUTEX);
+        if(wcount != 1)
+        {
+            Signal(semid, MUTEX);
+        }
 
         printf("%sNot enough in balance (%u) to withdraw (%u)\n", cssignature, balance, withdraw);
         sleep(2 * sleepScale);
@@ -126,6 +129,8 @@ SemaphoreAlgorithm:
 
         UpdateSHM();
         sleep(2 * sleepScale);
+
+        Signal(semid, MUTEX);
 
         Wait(semid, SECOND);
         Signal(semid, FIRST);

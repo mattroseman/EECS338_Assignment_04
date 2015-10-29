@@ -6,7 +6,6 @@
 
 #include "SharedMemory.h"
 
-// Creates a new shared memory segment based off of key and number of bytes size, and returns the segment id
 int CreateSegment(key_t key, size_t size)
 {
     int shmid;
@@ -18,7 +17,6 @@ int CreateSegment(key_t key, size_t size)
     return shmid;
 }
 
-// Returns the id of an already created Shared Memory Segment
 int GetSegment(key_t key)
 {
     int shmid;
@@ -30,7 +28,6 @@ int GetSegment(key_t key)
     return shmid;
 }
 
-// Destroys the shared memory segment with the given id
 void DestroySegment(int shmid)
 {
     if (shmctl(shmid, IPC_RMID, (struct shmid_ds *) 0) < 0)

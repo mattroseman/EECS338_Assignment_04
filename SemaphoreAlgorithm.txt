@@ -1,0 +1,30 @@
+Withdraw:
+wait(mutex);
+if (wcount == 0 && balance > withdraw){
+    balance = balance - withdraw;
+    signal(mutex);
+}else{
+    wcount++;
+    if (wcount > 1)
+    {
+        signal(mutex);
+        wait(fist);
+        nextWithdraw = withdraw;
+        signal(second);
+        wait(wlist);
+    }else{
+        signal(mutex);
+        wait(fist);
+        nextWithdraw = withdraw;
+        wait(wlist);
+    }
+    signal(fist);
+    balance = balance - withdraw;
+    wcount = wcount - 1;
+    wait(second);
+    if (wcount > 1 && nextWithdraw < balance){
+        signal(wlist);
+    }else{
+        signal(mutex);
+    }
+}

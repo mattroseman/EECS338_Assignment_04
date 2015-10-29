@@ -8,8 +8,6 @@
 
 #include "Semaphore.h"
 
-
-// Possible return values from the semctl call
 union semun {
     int val;
     struct semid_ds *buf;
@@ -17,9 +15,6 @@ union semun {
 };
 
 
-// Makes a semaphore group from key key of n semaphores and returns the new id
-// Sets all semaphores to 0
-// the size of the array and n should be the same
 int CreateGroup(key_t key, int n, unsigned short * initVal)
 {
     int returnVal;
@@ -40,7 +35,6 @@ int CreateGroup(key_t key, int n, unsigned short * initVal)
     return returnVal;
 }
 
-// Gets the id of an already created group
 int GetGroup(key_t key)
 {
     int returnVal;
@@ -51,7 +45,6 @@ int GetGroup(key_t key)
     }
 }
 
-// Destroys the group with id semid
 void DestroyGroup(int semid)
 {
     if(semctl(semid, 0, IPC_RMID) < 0)
@@ -63,7 +56,6 @@ void DestroyGroup(int semid)
 
 void Signal(int semid, int semnum)
 {
-    // initialize the semaphore operation structures
     struct sembuf signal = {semnum, 1, 0};
 
     if(semop(semid, &signal, 1) < 0)
@@ -75,7 +67,6 @@ void Signal(int semid, int semnum)
 
 void Wait(int semid, int semnum)
 {
-    // initialize the semaphore operation structures
     struct sembuf wait = {semnum, -1, 0};
 
     wait.sem_num = semnum;
