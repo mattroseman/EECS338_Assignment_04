@@ -78,7 +78,7 @@ int main(int argc, char * argv[])
     printf("%sNew Semaphore Group %d has been created\n", signature, semid);
     sleep(2 * sleepScale);
 
-Initialize:
+/* Initialize */
 
     wcount = 0;
     printf("%swcount = %u\n", signature, wcount);
@@ -94,7 +94,7 @@ Initialize:
 
     processRunning = 0;
 
-SharedMemory:
+/* SharedMemory */
 
     // creates a new shared memory segment
     // The memory follows format wcount, then balance
@@ -117,12 +117,12 @@ SharedMemory:
     printf("%sVariables have been put into shared memory\n", signature);
     sleep(2 * sleepScale);
 
-Semaphores:
+/* Semaphores */
 
     semid = CreateGroup(SEMAPHORE_KEY, NUM_SEM, initValues);
     printf("%sNew Semaphore Group %d has been created\n", signature, semid);
 
-MainLoop:
+/* MainLoop */
 
     CatchError((seed = time(NULL)), "time failed\n");
     srand(seed);
@@ -156,14 +156,14 @@ MainLoop:
         CatchError(sleep(time), "sleep failed\n");
     }
 
-    int status;
-    do
+    siginfo_t infop;
+    // the max possible processes still running
+    for (i=0; i<numProcesses; i++) 
     {
-        CatchError(wait(&status), "wait failed\n");
-    } 
-    while(status > 0);
+        CatchError(waitid(P_ALL, 0, &infop,  WEXITED | WNOHANG), "wait failed\n");
+    }
 
-Cleanup:
+/* Cleanup */
 
     free(signature);
 
