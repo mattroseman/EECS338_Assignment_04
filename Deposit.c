@@ -37,6 +37,7 @@ unsigned int deposit;
 unsigned int wcount;
 unsigned int balance;
 unsigned int nextWithdraw;
+unsigned int processRunning;
 
 unsigned int oldbalance;
 

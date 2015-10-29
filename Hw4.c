@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <string.h>
 #include <time.h>
 
@@ -27,6 +28,9 @@ void StartDeposit(unsigned int amount);
 
 unsigned int sleepScale;
 
+// The number of processes that will be started
+unsigned int numProcesses;
+
 int pid;
 char * signature;
 
@@ -46,16 +50,22 @@ unsigned int balance;
 // Amount of the next waiting withdraw process
 unsigned int nextWithdraw;
 unsigned int waitingForThird;
+unsigned int processRunning;
 
 unsigned int seed;
 
-/*
- * TODO 
- * Have the main function take in a flag of either preset test or random test
- * Maybe ./sap preset, or ./sap random
- */
-int main() 
+
+int main(int argc, char * argv[]) 
 { 
+    if(argc > 1) 
+    {
+        CatchError(sscanf(argv[1], "%u", &numProcesses), "sscanf failed\n");
+    }
+    else
+    {
+        numProcesses = 10;
+    }
+
     sleepScale = 1;
 
     signature = malloc(100);
@@ -82,11 +92,13 @@ Initialize:
 
     waitingForThird = 0;
 
+    processRunning = 0;
+
 SharedMemory:
 
     // creates a new shared memory segment
     // The memory follows format wcount, then balance
-    shmid = CreateSegment(SEMAPHORE_KEY, (4*sizeof(unsigned int)));
+    shmid = CreateSegment(SEMAPHORE_KEY, (5*sizeof(unsigned int)));
     printf("%sNew Shared Memory Segment %d has been created\n", signature, shmid);
     sleep(2 * sleepScale);
 
@@ -100,6 +112,7 @@ SharedMemory:
     *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
     *(unsigned int *)(memaddr + 2 * sizeof(unsigned int)) = nextWithdraw;
     *(unsigned int *)(memaddr + 3 * sizeof(unsigned int)) = waitingForThird;
+    *(unsigned int *)(memaddr + 4 * sizeof(unsigned int)) = processRunning;
 
     printf("%sVariables have been put into shared memory\n", signature);
     sleep(2 * sleepScale);
@@ -114,11 +127,8 @@ MainLoop:
     CatchError((seed = time(NULL)), "time failed\n");
     srand(seed);
 
-    /* 
-    TODO
-    have a set amount of times this runs (passed in as argument?)
-    */
-    while(1)
+    int i;
+    for (i = 0; i < numProcesses; i++)
     {
         // Amount to be withdrawn/deposited
         unsigned int amount = (rand()%300) + 1;
@@ -146,12 +156,12 @@ MainLoop:
         CatchError(sleep(time), "sleep failed\n");
     }
 
-    /* 
-     * TODO
-     * Have a preset sequential calls to StartWithdrawProcess and StartDepositProcess
-     * be called in a specific order to test different arrangements
-     */
-
+    int status;
+    do
+    {
+        CatchError(wait(&status), "wait failed\n");
+    } 
+    while(status > 0);
 
 Cleanup:
 
