@@ -113,13 +113,13 @@ SemaphoreAlgorithm:
     {
         wcount = wcount + 1;
 
+        printf("%sNot enough in balance (%u) to withdraw (%u)\n", cssignature, balance, withdraw);
+        sleep(2 * sleepScale);
+
         printf("\n%sExiting Critical Section\n", cssignature);
         sleep(2 * sleepScale);
 
         Signal(semid, MUTEX);
-
-        printf("%sNot enough in balance (%u) to withdraw (%u)\n", signature, balance, withdraw);
-        sleep(2 * sleepScale);
 
         // first acts as a second mutex semaphore
         Wait(semid, FIRST);

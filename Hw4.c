@@ -116,15 +116,16 @@ MainLoop:
 
     /* 
     TODO
-    Have a listener for any key strokes that exits this and kills all running processes
+    have a set amount of times this runs (passed in as argument?)
     */
     while(1)
     {
         // Amount to be withdrawn/deposited
         unsigned int amount = (rand()%300) + 1;
 
-        // Which process should be run: deposit = 0/withdraw = 1
-        unsigned int x = (rand()%2);
+        // Favours Withdraw for more interesting output
+        // Which process should be run: deposit = 0/withdraw = 1, 2
+        unsigned int x = (rand()%3);
 
         // Make a Deposit
         if (x == 0)
