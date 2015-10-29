@@ -12,6 +12,7 @@ if (wcount == 0 && balance > withdraw){
         nextWithdraw = withdraw;
         signal(second);
         wait(wlist);
+    // if there are no are no other semaphores waiting then this shouldn't signal second
     }else{
         signal(mutex);
         wait(fist);
@@ -28,3 +29,40 @@ if (wcount == 0 && balance > withdraw){
         signal(mutex);
     }
 }
+
+Withdraw:
+    wait(mutex);
+    if(wcount==0 && balance > withdraw) {
+        balance = balance - withdraw;
+        signal(mutex);
+    } else {
+        wcount++;
+        signal(mutex);
+
+        wait(first);
+
+        nextWithdraw = withdraw;
+
+        if(waitingForThird)
+        {
+            signal(third);
+        }
+        wait(second);
+
+        balance = balance - withdraw;
+        wccount = wcount - 1;
+
+        if(wcount > 1){
+            waitingForThird = true;
+            signal(first);
+            wait(third);
+            waitingForThird = false;
+            if (nextWithdraw < balance)
+            {
+                signal(second);
+            }
+        } else {
+            signal(first);
+            signal(mutex);
+        }
+    }

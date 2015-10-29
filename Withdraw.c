@@ -15,6 +15,7 @@
 #define MUTEX 0
 #define FIRST 1
 #define SECOND 2
+#define THIRD 3
 
 // Pushes the new variables to shared memory
 void UpdateSHM();
@@ -35,6 +36,7 @@ unsigned int withdraw;
 unsigned int wcount;
 unsigned int balance;
 unsigned int nextWithdraw;
+unsigned int waitingForThird;
 
 unsigned int oldbalance;
 
@@ -114,12 +116,9 @@ SemaphoreAlgorithm:
         printf("\n%sExiting Critical Section\n", cssignature);
         sleep(2 * sleepScale);
 
-        if(wcount != 1)
-        {
-            Signal(semid, MUTEX);
-        }
+        Signal(semid, MUTEX);
 
-        printf("%sNot enough in balance (%u) to withdraw (%u)\n", cssignature, balance, withdraw);
+        printf("%sNot enough in balance (%u) to withdraw (%u)\n", signature, balance, withdraw);
         sleep(2 * sleepScale);
 
         // first acts as a second mutex semaphore
@@ -127,13 +126,17 @@ SemaphoreAlgorithm:
 
         nextWithdraw = withdraw;
 
+        printf("%sThe next waiting withdraw process needs amount %u\n", signature, nextWithdraw);
+
+        if(waitingForThird)
+        {
+            Signal(semid, THIRD);
+        }
+
         UpdateSHM();
         sleep(2 * sleepScale);
 
-        Signal(semid, MUTEX);
-
         Wait(semid, SECOND);
-        Signal(semid, FIRST);
 
         printf("\n%sEntering Critical Section\n", cssignature);
         sleep(2 * sleepScale);
@@ -155,14 +158,22 @@ SemaphoreAlgorithm:
         wcount = wcount - 1;
 
         // If there is another process waiting and there is enough for it to withdraw
-        if (wcount > 1 && nextWithdraw < balance)
+        if (wcount > 1)
         {
-            printf("%sExiting Critical Section\n\n", cssignature);
-            sleep(2 * sleepScale);
+            waitingForThird = 1;
+            Signal(semid, FIRST);
+            Wait(semid, THIRD);
+            waitingForThird = 0;
 
-            UpdateSHM();
+            if (nextWithdraw < balance)
+            {
+                printf("%sExiting Critical Section\n\n", cssignature);
+                sleep(2 * sleepScale);
 
-            Signal(semid, SECOND);
+                UpdateSHM();
+
+                Signal(semid, SECOND);
+            }
         }
         // If there is no other process waiting or there isn't enough for it to withdraw
         else
@@ -171,6 +182,8 @@ SemaphoreAlgorithm:
             sleep(2 * sleepScale);
 
             UpdateSHM();
+
+            Signal(semid, FIRST);
 
             Signal(semid, MUTEX);
         }
@@ -194,6 +207,7 @@ void UpdateSHM()
     *(unsigned int *)memaddr = wcount;
     *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
     *(unsigned int *)(memaddr + 2 * sizeof(unsigned int)) = nextWithdraw;
+    *(unsigned int *)(memaddr + 3 * sizeof(unsigned int)) = waitingForThird;
 }
 
 void GetSHM()
@@ -201,4 +215,5 @@ void GetSHM()
     wcount = *(unsigned int *)memaddr;
     balance = *(unsigned int *)(memaddr + sizeof(unsigned int));
     nextWithdraw = *(unsigned int *)(memaddr + 2 * sizeof(unsigned int));
+    waitingForThird = *(unsigned int *)(memaddr + 3 * sizeof(unsigned int));
 }

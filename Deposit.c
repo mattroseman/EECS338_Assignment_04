@@ -15,6 +15,7 @@
 #define MUTEX 0
 #define FIRST 1
 #define SECOND 2
+#define THIRD 3
 
 
 // Pushes the new variables to shared memory

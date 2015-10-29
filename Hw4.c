@@ -19,6 +19,7 @@
 // Nonbinary Semaphores
 #define FIRST 1
 #define SECOND 2
+#define THIRD 3
 
 void CatchError(int, char *);
 void StartWithdraw(unsigned int amount);
@@ -35,7 +36,7 @@ int shmid;
 void * memaddr;
 
 // initial starting values of the semaphores
-unsigned short initValues[] = {0,0,0};
+unsigned short initValues[] = {1,1,0,0};
 
 char * pargs[3];
 
@@ -44,6 +45,7 @@ unsigned int wcount;
 unsigned int balance;
 // Amount of the next waiting withdraw process
 unsigned int nextWithdraw;
+unsigned int waitingForThird;
 
 unsigned int seed;
 
@@ -65,11 +67,6 @@ int main()
     semid = CreateGroup(SEMAPHORE_KEY, NUM_SEM, initValues);
     printf("%sNew Semaphore Group %d has been created\n", signature, semid);
     sleep(2 * sleepScale);
-    // mutex starts as 1
-    Signal(semid, MUTEX);
-    // first starts as 1
-    Signal(semid, FIRST);
-    // second starts as 0
 
 Initialize:
 
@@ -83,11 +80,13 @@ Initialize:
 
     nextWithdraw = 0;
 
+    waitingForThird = 0;
+
 SharedMemory:
 
     // creates a new shared memory segment
     // The memory follows format wcount, then balance
-    shmid = CreateSegment(SEMAPHORE_KEY, (3*sizeof(unsigned int)));
+    shmid = CreateSegment(SEMAPHORE_KEY, (4*sizeof(unsigned int)));
     printf("%sNew Shared Memory Segment %d has been created\n", signature, shmid);
     sleep(2 * sleepScale);
 
@@ -100,6 +99,7 @@ SharedMemory:
     *(unsigned int *)memaddr = wcount;
     *(unsigned int *)(memaddr + sizeof(unsigned int)) = balance;
     *(unsigned int *)(memaddr + 2 * sizeof(unsigned int)) = nextWithdraw;
+    *(unsigned int *)(memaddr + 3 * sizeof(unsigned int)) = waitingForThird;
 
     printf("%sVariables have been put into shared memory\n", signature);
     sleep(2 * sleepScale);
@@ -108,11 +108,6 @@ Semaphores:
 
     semid = CreateGroup(SEMAPHORE_KEY, NUM_SEM, initValues);
     printf("%sNew Semaphore Group %d has been created\n", signature, semid);
-    // mutex starts as 1
-    Signal(semid, MUTEX);
-    // first starts as 1
-    Signal(semid, FIRST);
-    // second starts as 0
 
 MainLoop:
 
