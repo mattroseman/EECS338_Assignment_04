@@ -1,0 +1,14 @@
+-Matthew Roseman
+-MRR77
+-Assignement 4
+
+To Run execute the sap file
+the program starts processes at random intervals, of random amounts, and randomly chooses between withdraw and deposit
+withdraw is choosen 2/3 of the time
+
+the default is to start 10 processes but if you pass in a number argument "./sap 23" then 23 processes will start
+
+I'v also included a text file SemaphoreAlgorithm.txt that has the algorithm in an easier to read manner
+
+The Semaphore.c and SharedMemory.c files contail helper functions that call all the methods for creating,attaching, etc
+semaphroes and shared memory
